@@ -1,5 +1,5 @@
 # CircuitQ
-## Automated design of superconducting Qubits
+#### Automated design of superconducting qubits
 
 For exemplary usage see the notebooks folder.
 
@@ -7,5 +7,5 @@ For exemplary usage see the notebooks folder.
 `python setup.py develop`
 
 ### To install the current version (run in folder)
-'pip install circuitq'
+`pip install circuitq`
 
