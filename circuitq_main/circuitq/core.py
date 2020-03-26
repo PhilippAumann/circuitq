@@ -601,6 +601,10 @@ class CircuitQ:
                         break
                 if 'tilde' in str(self.h_parameters[n]):
                     parameter_values[n] = 0
+            else:
+                if 'tilde' in str(self.h_parameters[n]):
+                    parameter_values[n] = (
+                        parameter_values[n]*spa.identity(n_dim**nbr_subsystems))
         if any(p is False for p in parameter_values):
             raise Exception("Parameter type might have not been recognized.")
         self.parameter_values = parameter_values
