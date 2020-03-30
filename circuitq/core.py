@@ -13,7 +13,7 @@ class CircuitQ:
     """
     A class corresponding to a superconducting circuit.
     """
-    def __init__(self, circuit_graph, e =  1, hbar = 1,
+    def __init__(self, circuit_graph, e = 1, hbar = 1,
                  ground_nodes = [], print_feedback=False):
         """
         Creates a circuit from a given graph.
@@ -477,7 +477,7 @@ class CircuitQ:
         return h, h_parameters, h_sep
 
 
-    def get_numerical_hamiltonian(self, n_dim, parameter_values = None):
+    def get_numerical_hamiltonian(self, n_dim, grid_length = 4*np.pi, parameter_values = None):
         """
         Creates a numerical representation of the Hamiltonian using the
         finite difference method.
@@ -486,6 +486,8 @@ class CircuitQ:
         ----------
         n_dim: int
             Dimension of numerical matrix of all subsystems
+        grid_length: float (Default is 4*np.pi)
+            The coordinate grid is taken from -grid_length to +grid_length in n_dim steps
         parameter_values: list
             Numerical values of system parameters (corresponds to self.h_parameters)
 
@@ -552,7 +554,7 @@ class CircuitQ:
         phi_matrices, q_matrices, q_quadratic_matrices = [], [], []
         phi_list, q_list, q_quadratic_list = [], [], [] # without ground, input for lambdify
         nbr_subsystems = len(self.nodes) - len(self.ground_nodes)
-        self.coord_list = np.arange(-4*np.pi, 4*np.pi, 8*np.pi/n_dim)
+        self.coord_list = np.arange(-grid_length, grid_length, abs(2*grid_length)/n_dim)
         mtx_id_list = [np.identity(n_dim) for n in range(nbr_subsystems)]
         n_mtx_list = 0
         for n, phi in self.phi_dict.items():
