@@ -2,8 +2,6 @@ import copy
 import networkx as nx
 import circuitq.functions_file as my
 import sympy as sp
-from sympy.physics.quantum import TensorProduct, tensor_product_simp
-from sympy.physics.paulialgebra import Pauli, evaluate_pauli_product
 import qutip as qt
 import numpy as np
 import scipy.sparse as spa
@@ -57,7 +55,7 @@ class CircuitQ:
         self.phi_0 = self.hbar/(2*self.e)
         self.delete_edges = []
         self.deleted_edges = []
-        self.c_matrix_inv = False
+        self.c_matrix_inv = None
         self.inductances = dict()
         self.josephson_energies = dict()
         self.get_classical_hamiltonian_run = False
@@ -72,7 +70,9 @@ class CircuitQ:
         self.coord_list = []
         self.parameter_values = []
         self.input_num_list = []
-        self.h_num = False
+        self.h_num = None
+        self.evals = None
+        self.anharmonicity = None
 
     def get_classical_hamiltonian(self):
         """
@@ -435,15 +435,6 @@ class CircuitQ:
         self.c_matrix_inv = c_matrix.inv()
 
         # =============================================================================
-        # Set parasitic capacitances to zero
-        # =============================================================================
-        subs_list = []
-        for cap in capacitances.values():
-            if 'Cp' in str(cap):
-                subs_list.append((cap,0))
-        self.c_matrix_inv = self.c_matrix_inv.subs(subs_list)
-
-        # =============================================================================
         # Define classical Hamiltonian
         # =============================================================================
         h = 0.5*(q_vec.transpose()*self.c_matrix_inv*q_vec)[0] + pot_energy
@@ -486,7 +477,7 @@ class CircuitQ:
         ----------
         n_dim: int
             Dimension of numerical matrix of all subsystems
-        grid_length: float (Default is 4*np.pi)
+        grid_length: float (Default 4*np.pi)
             The coordinate grid is taken from -grid_length to +grid_length in n_dim steps
         parameter_values: list
             Numerical values of system parameters (corresponds to self.h_parameters)
@@ -599,16 +590,20 @@ class CircuitQ:
                 for key, value in self.c_v.items():
                     if key in str(self.h_parameters[n])\
                             and key != "E_C":
-                        parameter_values[n] = value
+                        if "Cp" in str(self.h_parameters[n]):
+                            parameter_values[n] = value*10**(-4)
+                        else:
+                            parameter_values[n] = value
                         break
                 if 'tilde' in str(self.h_parameters[n]):
                     parameter_values[n] = 0
-            else:
-                if 'tilde' in str(self.h_parameters[n]):
-                    parameter_values[n] = (
-                        parameter_values[n]*spa.identity(n_dim**nbr_subsystems))
         if any(p is False for p in parameter_values):
             raise Exception("Parameter type might have not been recognized.")
+        _parameter_values = copy.deepcopy(parameter_values)
+        for n, parameter in enumerate(parameter_values_l):
+            if 'tilde' in str(self.h_parameters[n]):
+                _parameter_values[n] = (
+                    parameter_values[n]*spa.identity(n_dim**nbr_subsystems))
         self.parameter_values = parameter_values
 
         # =============================================================================
@@ -616,7 +611,7 @@ class CircuitQ:
         # =============================================================================
         input_list = q_list + q_quadratic_list + phi_list + self.h_parameters
         h_num_lambda = sp.lambdify(input_list, self.h_sep, modules=[{'cos': mtx_cos}, 'numpy'])
-        self.input_num_list = q_matrices + q_quadratic_matrices + phi_matrices + self.parameter_values
+        self.input_num_list = q_matrices + q_quadratic_matrices + phi_matrices + _parameter_values
         self.h_num = h_num_lambda(*self.input_num_list)
 
         return self.h_num
@@ -641,10 +636,61 @@ class CircuitQ:
         evals, estates = spa.linalg.eigsh(self.h_num, k=n_eig, which='SA')
         # evals, estates = np.linalg.eigh((self.h_num).toarray())
         idx_sort = np.argsort(evals)
-        evals = evals[idx_sort]
+        self.evals = evals[idx_sort]
         estates = estates[:, idx_sort]
 
-        return evals, estates
+        return self.evals, estates
 
+
+    def get_spectrum_anharmonicity(self, nbr_check_levels = 3):
+        """
+        Calculates the anharmonicity of the eigenspectrum. The method can handle
+        degenerated eigenenergies. It considers the transition that is the closest to
+        the qubit transition (groundstate-first excited states) and subsequently
+        calculates the quotient between these two transitions and returns abs(1-quotient).
+
+        Parameters
+        ----------
+        nbr_check_levels: int (Default 3)
+            Number of levels that should be considered for this analysis. The
+            counting includes groundstate and first excited state.
+
+        Returns
+        ----------
+        anharmonicity: float
+            abs(1-quotient) as described above
+        """
+        quotients = []
+        distances_to_1 = []
+        excited_level = 1
+        # Define first non-degenerate state which is higher then groundstate
+        # as excited level
+        while abs(self.evals[excited_level]-self.evals[0]) <= abs(self.evals[0]*10**(-3)):
+            excited_level += 1
+        if excited_level == len(self.evals)-1:
+            raise Exception("All states in self.evals are degenerated")
+        current_level = excited_level
+        check_level = 2
+        for k in range(excited_level + 1, len(self.evals)):
+            if (abs(self.evals[current_level] - self.evals[k])
+                    <= abs(self.evals[current_level]*10**(-3))):
+                continue
+            else:
+                current_level = k
+                check_level += 1
+            for l in range(1,k):
+                quotient = abs((self.evals[k]-self.evals[l])/(self.evals[excited_level]-self.evals[0]))
+                if quotient >= 2:
+                    quotient = 2
+                quotients.append(quotient)
+            if check_level >= nbr_check_levels:
+                break
+        if check_level < nbr_check_levels:
+            raise Exception("Not enough eigenenergies to check spectrum for nbr_check_levels")
+        for quotient in quotients:
+            distances_to_1.append(abs(1-quotient))
+        self.anharmonicity = min(distances_to_1)
+
+        return self.anharmonicity
 
 
