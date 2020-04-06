@@ -6,4 +6,4 @@ import random
 my_random = random.Random()
 my_random.seed(10)
 
-winner_instance = cq.mc_search(100, 20, 20, my_random, 'test', temperature=0.5)
+winner_instance = cq.mc_search(100, 40, 20, my_random, 'test', temperature=0.01)

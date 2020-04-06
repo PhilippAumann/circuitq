@@ -60,6 +60,7 @@ file_name: str
     This name will be added to the file and figure directories.
 tempreature: float
     Temperatur of the Metropolis-Hastings algorithm
+
 Returns
 ----------
 winner instance: numpy array
@@ -84,6 +85,7 @@ def mc_search(n_dim, circuit_steps, parameter_steps, my_random, file_name, tempe
             accept_counter = 0
             cost_list = []
             values_list = []
+            print("Initial parameters: " + str(parameter_values))
             for p_s in range(parameter_steps):
                 varied_parameter_values = vary_parameter(parameter_values, my_random)
                 pickle.dump({"parameter{}.{}".format(c_s,p_s): varied_parameter_values},
@@ -98,7 +100,7 @@ def mc_search(n_dim, circuit_steps, parameter_steps, my_random, file_name, tempe
                     accept_counter += 1
                     cost_list.append(varied_cost)
                     values_list.append(varied_parameter_values)
-            if accept_counter >= parameter_steps/2:
+            if accept_counter >= 3*parameter_steps/4:
                 print("\n graph accepted\n")
                 graph = new_graph
                 cq.visualize_circuit_general(new_graph, abs_figure_path + str(c_s) + '_accepted_circuit' )
@@ -130,9 +132,9 @@ def initialize_transmon(n_dim):
 # Get value of the cost function for given instance
 # =============================================================================
 def get_cost(circuit, graph):
-    anharmonicity = circuit.get_spectrum_anharmonicity() *10**1
+    anharmonicity = circuit.get_spectrum_anharmonicity() *10**0
     nbr_edges = len(graph.edges)
-    cost = anharmonicity + nbr_edges
+    cost = 1-anharmonicity + nbr_edges
     print("Anharmonicity = " + str(anharmonicity))
     print("Number of edges = " + str(nbr_edges))
     return cost
@@ -272,19 +274,21 @@ def vary_parameter(parameter_values, my_random):
     parameter_values = copy.deepcopy(parameter_values)
     parameter = my_random.choice(parameter_values)
     parameter_idx = parameter_values.index(parameter)
+    print("Changed parameter " + str(parameter))
     if parameter == 0:
         parameter = 1
     else:
         rdm_factor = my_random.choice([2/3, 4/3])
         parameter = rdm_factor*parameter
     parameter_values[parameter_idx] = parameter
+    print("to " + str(parameter))
     return parameter_values
 
 # =============================================================================
 # Accept or Refuse
 # =============================================================================
 def accept_refuse(new_cost, old_cost, temperature, my_random):
-    exp_arg = float((new_cost - old_cost) / temperature)
+    exp_arg = float((old_cost - new_cost) / temperature)
     p_accept = min([1, np.exp(exp_arg)])
     print("Acceptance probability: " + str(p_accept))
     random_nbr = my_random.uniform(0, 1)

@@ -205,12 +205,16 @@ class CircuitQ:
 
         # Execute the above functions for the purely capacitive branches
         for e in purely_capacitive_branches:
-            if e in self.deleted_edges:
-                continue
-            u_0 = e[0]
-            v_0 = e[1]
-            _discover_and_delete(u_0, e)
-            _discover_and_delete(v_0, e)
+            e_already_deleted = False
+            for d_e in self.deleted_edges:
+                if ((d_e[0]==e[0] and d_e[1]==e[1] and d_e[2]==e[2]) or
+                    (d_e[1]==e[0] and d_e[0]==e[1] and d_e[2]==e[2])):
+                    e_already_deleted = True
+            if not e_already_deleted:
+                u_0 = e[0]
+                v_0 = e[1]
+                _discover_and_delete(u_0, e)
+                _discover_and_delete(v_0, e)
 
         # =============================================================================
         # Introduce parasitic capacitances
