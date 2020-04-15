@@ -71,6 +71,7 @@ def mc_search(n_dim, circuit_steps, parameter_steps, my_random, file_name, tempe
     abs_data_path, abs_figure_path = create_directories(file_name)
     circuit, h_num, graph = initialize_transmon(n_dim)
     accepted_list = []
+    cost_ct = get_cost(circuit, graph)
     with open(os.path.join(abs_data_path, 'search_data.pickle')
                 ,'wb') as data_file:
         for c_s in range(circuit_steps):
@@ -81,8 +82,8 @@ def mc_search(n_dim, circuit_steps, parameter_steps, my_random, file_name, tempe
             new_circuit.get_numerical_hamiltonian(dimension)
             parameter_values = new_circuit.parameter_values
             new_circuit.get_eigensystem()
-            new_cost = get_cost(new_circuit, new_graph)
-            accept_counter = 0
+            new_cost_ct = get_cost(new_circuit, new_graph)
+            cost_par = new_cost_ct
             cost_list = []
             values_list = []
             print("Initial parameters: " + str(parameter_values))
@@ -93,18 +94,21 @@ def mc_search(n_dim, circuit_steps, parameter_steps, my_random, file_name, tempe
                 varied_h_num = new_circuit.get_numerical_hamiltonian(dimension,
                                                                      parameter_values=varied_parameter_values)
                 new_circuit.get_eigensystem()
-                varied_cost = get_cost(new_circuit, new_graph)
-                accept = accept_refuse(varied_cost, new_cost, temperature, my_random)
+                new_cost_par = get_cost(new_circuit, new_graph)
+                accept = accept_refuse(new_cost_par, cost_par, temperature, my_random)
                 if accept:
                     parameter_values = varied_parameter_values
-                    accept_counter += 1
-                    cost_list.append(varied_cost)
+                    cost_list.append(new_cost_par)
                     values_list.append(varied_parameter_values)
-            if accept_counter >= 3*parameter_steps/4:
+                    cost_par = new_cost_par
+
+            if accept_refuse(cost_par, cost_ct, temperature, my_random):
                 print("\n graph accepted\n")
                 graph = new_graph
+                cost_ct = new_cost_ct
                 cq.visualize_circuit_general(new_graph, abs_figure_path + str(c_s) + '_accepted_circuit' )
-                accepted_list.append([min(cost_list),values_list[cost_list.index(min((cost_list)))], new_graph])
+                if len(cost_list) > 0:
+                    accepted_list.append([min(cost_list),values_list[cost_list.index(min((cost_list)))], new_graph])
             else:
                 print("\n graph refused\n")
                 cq.visualize_circuit_general(new_graph, abs_figure_path + str(c_s) + '_refused_circuit')
@@ -125,6 +129,7 @@ def initialize_transmon(n_dim):
     graph.add_edge(0, 1, element='J')
     circuit = cq.CircuitQ(graph)
     h_num = circuit.get_numerical_hamiltonian(n_dim)
+    circuit.get_eigensystem()
 
     return circuit, h_num, graph
 
@@ -197,7 +202,7 @@ def remove_edge(graph, my_random, no_deletion = 0):
     rdm_edge = my_random.choice(edges)
     if len(edges) == 2:
         print("Only two edges. No deletion!")
-        return graph
+        return do_action(graph, my_random)
     ngb1 = list(graph.neighbors(rdm_edge[0]))
     nbr_ngb1 = len(ngb1)
     ngb2 = list(graph.neighbors(rdm_edge[1]))

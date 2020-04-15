@@ -11,8 +11,8 @@ class CircuitQ:
     """
     A class corresponding to a superconducting circuit.
     """
-    def __init__(self, circuit_graph, e = 1, hbar = 1,
-                 ground_nodes = [], print_feedback=False):
+    def __init__(self, circuit_graph, e = 1, hbar = 1, ground_nodes = [],
+                 offset_nodes = [], print_feedback=False):
         """
         Creates a circuit from a given graph.
 
@@ -32,6 +32,10 @@ class CircuitQ:
             The nodes set as ground can be specified in a list.
             They have to be active nodes. If they are not specified, one node
             will be chosen automatically as ground.
+        offset_nodes: list
+            The nodes specified in this list will have an offset charge
+            which values can be specified via parameter_values in
+            self.get_numerical_hamiltonian()
         print_feedback: bool (Default False)
             Bool to control printed feedback
         """
@@ -51,6 +55,7 @@ class CircuitQ:
         c_v["E"] = 50 * c_v["E_C"]
         self.c_v = c_v
         self.ground_nodes = ground_nodes
+        self.offset_nodes = offset_nodes
         self.print_feedback = print_feedback
         self.phi_0 = self.hbar/(2*self.e)
         self.delete_edges = []
@@ -66,6 +71,8 @@ class CircuitQ:
         self.phi_periodic = dict()
         self.q_dict = dict()
         self.q_quadratic_dict = dict()
+        self.loop_fluxes = dict()
+        self.offset_dict = dict()
         self.h, self.h_parameters, self.h_sep = self.get_classical_hamiltonian()
         self.coord_list = []
         self.parameter_values = []
@@ -320,7 +327,6 @@ class CircuitQ:
         # Define potential energy
         # =============================================================================
         pot_energy = 0
-        loop_fluxes = dict()
         used_c = []
         nbr_loop_fluxes = dict()
 
@@ -351,11 +357,11 @@ class CircuitQ:
                         nbr_loop_fluxes[str(u) + str(v)] = nbr_l_f
                         nbr_loop_fluxes[str(v) + str(u)] = nbr_l_f
                         loop_flux = sp.symbols(r'\tilde{\Phi}_{' + str(u) + str(v) + str(nbr_l_f) + '}')
-                        loop_fluxes[str(u) + str(v) + str(nbr_l_f)] = loop_flux
-                        loop_fluxes[str(v) + str(u) + str(nbr_l_f)] = loop_flux
+                        self.loop_fluxes[(u, v, nbr_l_f)] = loop_flux
+                        self.loop_fluxes[(v, u, nbr_l_f)] = loop_flux
                         loop_flux_var = 0
                         for n in range(nbr_l_f+1):
-                            loop_flux_var += loop_fluxes[str(u) + str(v) + str(n)]
+                            loop_flux_var += self.loop_fluxes[(u, v, n)]
                         var = self.phi_dict[v] - self.phi_dict[u] + loop_flux_var
                     # Add terms for junctions or inductances to the potential energy
                     if 'L' in element:
@@ -424,7 +430,12 @@ class CircuitQ:
         for node in self.nodes:
             q = sp.symbols('q_{' + str(node) + '}')
             self.q_dict[node] = q
-            q_vec_list.append(q)
+            if node in self.offset_nodes:
+                o = sp.symbols('qo_{' + str(node) + '}')
+                self.offset_dict[node] = o
+                q_vec_list.append(q + o)
+            else:
+                q_vec_list.append(q)
         q_vec = sp.Matrix(q_vec_list)
         # Delete rows and columns corresponding to the ground nodes
         nodes_l = copy.deepcopy(self.nodes)
@@ -480,7 +491,7 @@ class CircuitQ:
         Parameters
         ----------
         n_dim: int
-            Dimension of numerical matrix of all subsystems
+            Dimension of numerical matrix of each subsystem
         grid_length: float (Default 4*np.pi)
             The coordinate grid is taken from -grid_length to +grid_length in n_dim steps
         parameter_values: list
@@ -543,45 +554,16 @@ class CircuitQ:
             m_dia = m.diagonal()
             return spa.diags(np.cos(m_dia), format='csr')
 
-        # =============================================================================
-        # Define numerical matrices
-        # =============================================================================
-        phi_matrices, q_matrices, q_quadratic_matrices = [], [], []
-        phi_list, q_list, q_quadratic_list = [], [], [] # without ground, input for lambdify
-        nbr_subsystems = len(self.nodes) - len(self.ground_nodes)
-        self.coord_list = np.arange(-grid_length, grid_length, abs(2*grid_length)/n_dim)
-        mtx_id_list = [np.identity(n_dim) for n in range(nbr_subsystems)]
-        n_mtx_list = 0
-        for n, phi in self.phi_dict.items():
-            if phi==0:
-                continue
-            periodic_bool = self.phi_periodic[n]
-            for var_type in ['phi', 'q', 'q_quadratic']:
-                mtx_list = copy.deepcopy(mtx_id_list)
-                if var_type=='phi':
-                    mtx_list[n_mtx_list] = phi_mtx(self.coord_list)
-                elif var_type=='q':
-                    mtx_list[n_mtx_list] = -1j*self.hbar*der_mtx(self.coord_list,
-                                                                 periodic=periodic_bool)
-                elif var_type=='q_quadratic':
-                    mtx_list[n_mtx_list] = -1*(self.hbar**2)*scnd_der_mtx(self.coord_list,
-                                                                          periodic=periodic_bool)
-                if nbr_subsystems==1:
-                    mtx_num = mtx_list[0]
-                else:
-                    mtx_num = spa.kron(mtx_list[0],mtx_list[1])
-                    for i in range(2, nbr_subsystems):
-                        mtx_num = spa.kron(mtx_num, mtx_list[i])
-                if var_type=='phi':
-                    phi_matrices.append(mtx_num)
-                    phi_list.append(phi)
-                elif var_type=='q':
-                    q_matrices.append(mtx_num)
-                    q_list.append(self.q_dict[n])
-                elif var_type=='q_quadratic':
-                    q_quadratic_matrices.append(mtx_num)
-                    q_quadratic_list.append(self.q_quadratic_dict[n])
-            n_mtx_list += 1
+        # Create Kronecker Product of matrix list
+        def kron_product(mtx_list):
+            nbr_subsystems = len(mtx_list)
+            if nbr_subsystems == 1:
+                mtx_num = mtx_list[0]
+            else:
+                mtx_num = spa.kron(mtx_list[0], mtx_list[1])
+                for i in range(2, nbr_subsystems):
+                    mtx_num = spa.kron(mtx_num, mtx_list[i])
+            return mtx_num
 
         # =============================================================================
         # Define default parameter values if not given
@@ -599,16 +581,74 @@ class CircuitQ:
                         else:
                             parameter_values[n] = value
                         break
-                if 'tilde' in str(self.h_parameters[n]):
+                if ('tilde' in str(self.h_parameters[n])
+                        or 'qo' in str(self.h_parameters[n])):
                     parameter_values[n] = 0
         if any(p is False for p in parameter_values):
             raise Exception("Parameter type might have not been recognized.")
-        _parameter_values = copy.deepcopy(parameter_values)
-        for n, parameter in enumerate(parameter_values_l):
-            if 'tilde' in str(self.h_parameters[n]):
-                _parameter_values[n] = (
-                    parameter_values[n]*spa.identity(n_dim**nbr_subsystems))
         self.parameter_values = parameter_values
+
+        # =============================================================================
+        # Define numerical matrices
+        # =============================================================================
+        phi_matrices, q_matrices, q_quadratic_matrices = [], [], []
+        phi_list, q_list, q_quadratic_list = [], [], [] # without ground, input for lambdify
+        nbr_subsystems = len(self.nodes_wo_ground)
+        self.coord_list = np.arange(-grid_length, grid_length, abs(2*grid_length)/n_dim)
+        mtx_id_list = [np.identity(n_dim) for n in range(nbr_subsystems)]
+        n_mtx_list = 0
+        subspace_pos = dict()
+        for n, phi in self.phi_dict.items():
+            if phi==0:
+                continue
+            subspace_pos[n] = n_mtx_list
+            periodic_bool = self.phi_periodic[n]
+            if n in self.offset_nodes:
+                parameter_pos = self.h_parameters.index(self.offset_dict[n])
+                offset = parameter_values[parameter_pos]
+            for var_type in ['phi', 'q', 'q_quadratic']:
+                mtx_list = copy.deepcopy(mtx_id_list)
+                if var_type=='phi':
+                    mtx_list[n_mtx_list] = phi_mtx(self.coord_list)
+                elif var_type=='q':
+                    mtx_list[n_mtx_list] = -1j*self.hbar*der_mtx(self.coord_list,
+                                                                 periodic=periodic_bool)
+                    if n in self.offset_nodes:
+                        mtx_list[n_mtx_list] += offset * spa.identity(n_dim)
+                elif var_type=='q_quadratic':
+                    mtx_list[n_mtx_list] = -1*(self.hbar**2)*scnd_der_mtx(self.coord_list,
+                                                                        periodic=periodic_bool)
+                    if n in self.offset_nodes:
+                        mtx_list[n_mtx_list] += (-2*offset *1j*self.hbar*der_mtx(self.coord_list,
+                                                                 periodic=periodic_bool) +
+                                                offset**2 * spa.identity(n_dim) )
+                mtx_num = kron_product(mtx_list)
+                if var_type=='phi':
+                    phi_matrices.append(mtx_num)
+                    phi_list.append(phi)
+                elif var_type=='q':
+                    q_matrices.append(mtx_num)
+                    q_list.append(self.q_dict[n])
+                elif var_type=='q_quadratic':
+                    q_quadratic_matrices.append(mtx_num)
+                    q_quadratic_list.append(self.q_quadratic_dict[n])
+            n_mtx_list += 1
+
+        # =============================================================================
+        # Define numerical matrices for offset flux
+        # =============================================================================
+        _parameter_values = copy.deepcopy(self.parameter_values)
+        for key, value in self.loop_fluxes.items():
+            node_list = [key[0], key[1]]
+            mtx_list = copy.deepcopy(mtx_id_list)
+            parameter_pos = self.h_parameters.index(value)
+            for n in node_list:
+                if self.phi_dict[n] == 0:
+                    continue
+                mtx_list[subspace_pos[n]] = (self.parameter_values[parameter_pos]*
+                                                spa.identity(n_dim))
+            mtx_num = kron_product(mtx_list)
+            _parameter_values[parameter_pos] = mtx_num
 
         # =============================================================================
         # Define numerical Hamiltonian via lambdify
