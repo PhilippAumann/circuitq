@@ -35,7 +35,7 @@ Contribution	& Formula & Remarks \\
 Spontaneous emission & $T_1 = \frac{12 \pi \epsilon_0 \hbar c^3}{d} \frac{1}{\omega_q^3}$~\cite{koch2007} & $d=2eL$: Dipole moment with $L\sim 15$ $\mu$m~\cite{koch2007} \newline $\omega_q$: Qubit frequency \newline
 For transmon, contribution to $T_1=0.3$ ms~\cite{koch2007} \\
 \hline
-Quasiparticle tunneling & In transmon regime~\cite{koch2007} \newline $T_1 = \left( \Gamma_{qp} N_{qp} \sqrt{\frac{k_b T}{\hbar \omega_q}} | \langle g, n_g \pm \frac{1}{2} | e, n_g \rangle |^2 \right)^{-1}$ \newline
+Quasiparticle tunneling (Transmon paper) & In transmon regime~\cite{koch2007} \newline $T_1 = \left( \Gamma_{qp} N_{qp} \sqrt{\frac{k_b T}{\hbar \omega_q}} | \langle g, n_g \pm \frac{1}{2} | e, n_g \rangle |^2 \right)^{-1}$ \newline
 with number of quasiparticles: \newline $N_{qp} = 1 +N_e e^{-\Delta/k_BT}\frac{3\sqrt{2\pi} \sqrt{\Delta k_b T}}{2E_F}$
  & $\Gamma_{qp} =\delta g_T  / 4 \Pi \hbar $: quasiparticle tunneling rate  \newline
 $\delta = 1  /  \nu V$: mean level spacing of reservoir \newline
@@ -48,6 +48,9 @@ $\Delta=90$~GHz: superconducting gap~\cite{delta} \newline
 $N_e=nV$: number of conduction elecctrons \newline
 $T=20$~mK: temperature  \newline
 For transmon, contribution to  $T_1 \sim 1$ s~\cite{koch2007} \\
+\hline
+Quasiparticle tunneling (more general expression) & $T_1 = \left( \sum_j \left| \bra{g} \sin ( \hat{\varphi}_j/2) \ket{e} \right|^{2} E_{Jj} \tilde{S}_{qp} (\omega_q) \right) ^{-1} $~\cite{catelani2011}& \\
+
 \hline 
 Charge noise & $T_1 = \frac{\hbar^2}{S_{Q}(\omega_q)} \left| \bra{e} \hat{V} \ket{g} \right|^{-2}$~\cite{yan2016}
 & $\hat{V}_i=\left(\hat{Q}C^{-1} \right)_i$: voltage operator \newline 
@@ -56,6 +59,9 @@ $S_{Q}(\omega_q)=A_Q^2\left( \frac{2\pi \cdot 1 Hz}{\omega_q} \right)^{\gamma_Q}
 Flux noise & $T_1 = \frac{\hbar^2}{S_{\Phi}(\omega_q)} \left| \bra{e} \hat{I} \ket{g} \right|^{-2}$~\cite{yan2016}
 & $\hat{I}_i$: current operator, which includes the sum of all $\frac{\Phi_i-\Phi_j}{L_{ij}}$ terms in the circuit. \newline 
 $S_{\Phi}(\omega_q)=A_{\Phi}^2\left( \frac{2\pi \cdot 1 Hz}{\omega_q} \right)^{\gamma_{\Phi}}$: noise spectral density with $A_{\Phi}^2\approx(10^{-6} \Phi_0)^2/$Hz~\cite{krantz2019} \\
+\hline
+Purcell effect & We don't include the purcell effect as we exclude external control and readout circuitry from our analysis. 
+& For transmon, contribution to  $T_1 \sim 16$ $\mu$s~\cite{koch2007}  \\
 \hline
 
 \end{tabular} 
