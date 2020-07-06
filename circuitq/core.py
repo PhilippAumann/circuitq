@@ -671,7 +671,7 @@ class CircuitQ:
         cos_charge_list = []
         nbr_subsystems = len(self.nodes_wo_ground)
         self.n_cutoff = int((n_dim-1) / 2 )
-        self.flux_list = np.arange(-grid_length, grid_length, abs(2*grid_length)/n_dim)
+        self.flux_list = np.linspace(-grid_length, grid_length, n_dim)
         self.charge_list = 2*self.e*np.arange(-self.n_cutoff, self.n_cutoff+1)
         mtx_id_list = [np.identity(n_dim) for n in range(nbr_subsystems)]
         n_mtx_list = 0
@@ -791,6 +791,9 @@ class CircuitQ:
         estates: array
             Array of eigenstates
         """
+        dim_total = self.h_num.shape[0]
+        if n_eig > dim_total-2:
+            n_eig = dim_total - 2
         self.n_eig = n_eig
         evals, estates = spa.linalg.eigsh(self.h_num, k=self.n_eig, which='SA')
         idx_sort = np.argsort(evals)
@@ -950,7 +953,8 @@ class CircuitQ:
         T_c = 1.2 #K
         k_b = 1.380649e-23 #J/K
         delta = 1.76*T_c*k_b #superconducting gap
-        x_qp = np.sqrt(2*np.pi*k_b*T_c/delta)*np.exp(-delta/(k_b*T_c))
+        # T = 20e-3 #K
+        x_qp = 1e-7 #np.sqrt(2*np.pi*k_b*T/delta)*np.exp(-delta/(k_b*T))
 
         # =============================================================================
         # Define groundstate, excited state and qubit transition
@@ -991,8 +995,17 @@ class CircuitQ:
                 sin_op = mtx_sin((self.phi_num_dict[nodes[1]]-
                                   self.phi_num_dict[nodes[0]] + loop_fluxes)/
                                  (2*self.phi_0))
-                mtx_element = ground_state.dot(sin_op.dot(excited_state)).data[0]
-                T1_inv += abs(mtx_element)**2*x_qp*(E_J/(self.hbar*2*np.pi))*np.sqrt((8*delta)/omega_q)
+                shifted_state = sin_op.dot(excited_state)
+                shifted_state_array = shifted_state.toarray()
+                norm = np.sqrt(np.sum([abs(element) ** 2 for element in shifted_state.data]))
+                shifted_state = spa.csr_matrix(shifted_state_array/norm)
+                # DELETE NEXT LINE AFTER DEBUG
+                self.shifted_state = shifted_state
+                mtx_element = ground_state.dot(shifted_state).data[0] #sin_op.dot(excited_state)).data[0]
+                # DELETE NEXT LINE AFTER DEBUG
+                self.mtx_element = abs(mtx_element)
+                T1_inv += abs(mtx_element) ** 2 * x_qp * (8 * E_J/ (self.hbar * 2 * np.pi)) * np.sqrt(
+                    8*delta / omega_q)
         if T1_inv==0:
             T1 = None
         else:

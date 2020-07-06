@@ -11,63 +11,63 @@ import matplotlib.pyplot as plt
 graph = nx.MultiGraph()
 graph.add_edge(0,1, element = 'C')
 graph.add_edge(0,1, element = 'J')
-# graph.add_edge(1,2, element = 'C')
-# graph.add_edge(1,2, element = 'J')
-# graph.add_edge(0,2, element = 'C')
-# graph.add_edge(0,2, element = 'J')
-# graph.add_edge(1,2, element = 'C')
-# graph.add_edge(2,3, element = 'L')
-# graph.add_edge(0,3, element = 'C')
 
 # =============================================================================
-# Create circuit instance with the symbolic classical Hamiltonian
+# Shifted (by one elemantary charge) state in flux basis by operator
 # =============================================================================
 circuit = cq.CircuitQ(graph)
-print(circuit.h_parameters)
-# =============================================================================
-# Numerical Hamiltonian
-# =============================================================================
-dim = 10
-# EJ = 0.1*circuit.c_v["E"] #2.5*circuit.c_v["E"]
-# alpha = 0.7
-# C = circuit.c_v["C"]
-# phi_ext = 0.5*np.pi*circuit.phi_0 #np.pi*circuit.phi_0
-#
-# # Parenthesis begin -----------------------------------------------------------
-# # =============================================================================
-# # SC Qubit
-# # =============================================================================
-# EC = circuit.c_v["E_C"]
-# fluxqubit = sc.FluxQubit(EJ1 = EJ, EJ2 = EJ, EJ3 = alpha*EJ,
-#                          ECJ1 = EC, ECJ2 = EC, ECJ3 = EC/alpha,
-#                          ECg1 = 1e25, ECg2 = 1e25, ng1 = 0, ng2 = 0,
-#                          flux = phi_ext/(circuit.phi_0*2*np.pi), ncut = int(dim/2))
-# esys = fluxqubit.eigensys(evals_count=30)
-# # Parenthesis end -------------------------------------------------------------
+dim = 400
+h_num = circuit.get_numerical_hamiltonian(dim)
+eigv, eigs = circuit.get_eigensystem()
+circuit.get_T1_quasiparticles()
+shifted_state_operator = circuit.shifted_state
 
-h_num = circuit.get_numerical_hamiltonian(dim),
-#                            parameter_values=[C,C,alpha*C,EJ,EJ,alpha*EJ,phi_ext])
-cutoff = 5
-eigv, eigs = circuit.get_eigensystem(cutoff)
+
+shifted_state_array = shifted_state_operator.toarray()
+norm = np.sqrt(np.sum([abs(element) ** 2 for element in shifted_state_operator.data]))
+shifted_state_operator_normalized = shifted_state_array/norm
+
+# =============================================================================
+# Shifted (by one elemantary charge) state in flux basis by offset
+# =============================================================================
+circuit = cq.CircuitQ(graph, offset_nodes=[1])
+parameters_list = [False, False, 1*circuit.e]
+circuit.get_numerical_hamiltonian(dim, parameter_values=parameters_list)
+circuit.get_eigensystem()
 circuit.transform_charge_to_flux()
+shifted_state_offset = circuit.estates_in_phi_basis[1]
 
+plt.style.use('default')
+plt.plot(abs(shifted_state_offset)**2, label='offset')
+plt.plot(abs(shifted_state_operator.data)**2, label='operator')
+plt.plot(abs(shifted_state_operator_normalized)**2, label='operator normalized')
+plt.legend()
+plt.show()
 
 # =============================================================================
-# Comparison Plot
+# Size of matrix element as a function of dimension
 # =============================================================================
-# plt.figure(figsize=(7,5))
-# plt.plot(np.arange(cutoff), eigv[:cutoff], 'rv', label="CircuitQ")
-# plt.plot(np.arange(cutoff), esys[0][:cutoff], 'g^', label="SC Qubit")
-# plt.legend()
-# plt.xlabel("Eigenvalue No.")
-# plt.ylabel("Energy")
-# for n in range(25):
-#     plt.axhline(esys[0][n], lw=0.5)
-# plt.ticklabel_format(style='scientific', scilimits=(0, 0))
+# mtx_elements = []
+# dims = np.arange(10,100,1)
+# # dims=[50]
+# for dim in dims:
+#
+#     print(dim, '*********')
+#     circuit = cq.CircuitQ(graph)
+#     # =============================================================================
+#     # Numerical Hamiltonian
+#     # =============================================================================
+#     dim = int(dim)
+#     h_num = circuit.get_numerical_hamiltonian(dim)
+#     eigv, eigs = circuit.get_eigensystem()
+#     # =============================================================================
+#     # T1
+#     # =============================================================================
+#     circuit.get_T1_quasiparticles()
+#     mtx_elements.append(circuit.mtx_element)
+#
+# plt.plot(dims, mtx_elements)
 # plt.show()
-
-print(circuit.get_T1_quasiparticles())
-
 
 
 
