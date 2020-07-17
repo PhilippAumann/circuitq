@@ -21,6 +21,6 @@ dim = 200
 h_num = circuit.get_numerical_hamiltonian(dim)
 eigv, eigs = circuit.get_eigensystem()
 print(circuit.get_T1_quasiparticles())
-
+print(circuit.get_T1_charge())
 
 

@@ -58,15 +58,15 @@ $x_{qp}= 10^{-7}~\cite{wang2014, different_x_qp}$ \newline
 $\Delta\approx 1.76 \cdot k_B T_c$: superconducting gap~\cite{gap} \newline
 $T_c \approx 1.2$ K: critical temperature in aluminum~\cite{T_c} \\
 \hline 
-Charge noise & $T_1 = \frac{\hbar^2}{S_{Q}(\omega_q)} \left| \bra{e} \hat{V} \ket{g} \right|^{-2}$~\cite{yan2016}
-& $\hat{V}_i=\left(\hat{Q}C^{-1} \right)_i$: voltage operator \newline 
+Charge noise & $T_1 = \left( \sum_{i} \frac{S_{Q}(\omega_q)}{\hbar^2} \left| \bra{e} \hat{V}_i \ket{g} \right|^{2} \right) ^{-1}$~\cite{yan2016}
+& $\hat{V}_i=\left(\hat{Q}^T C^{-1} \right)_i$: voltage operator \newline 
 $\hat{Q}$: charge operator vector with the charge-variables on the rows.\newline
-$S_{Q}(\omega_q)=A_Q^2\left( \frac{2\pi \cdot 1 Hz}{\omega_q} \right)^{\gamma_Q}$: noise spectral density with $A_Q^2=(10^{-3}e)^2/$Hz~\cite{krantz2019} \\
+$S_{Q}(\omega_q)=A_Q^2\left( \frac{2\pi \cdot 1 Hz}{\omega_q} \right)^{\gamma_Q}$: noise spectral density with $A_Q^2=(10^{-3}e)^2/$Hz and $\gamma_Q\approx1$~\cite{krantz2019} \\
 \hline
 Flux noise & $T_1 = \frac{\hbar^2}{S_{\Phi}(\omega_q)} \left| \bra{e} \hat{I} \ket{g} \right|^{-2}$~\cite{yan2016}
 & $\hat{I}_i$: current operator, which includes the sum of all $\frac{\Phi_i-\Phi_j}{L_{ij}}$ and $I_{C, ij}  \sin \frac{\Phi_i-\Phi_j}{\Phi_0}$ terms in the circuit that correspond to a distinct loop edge. \newline 
 $I_{C, ij} = 2 \pi E_{J, ij} / \Phi_0$: critical current \newline
-$S_{\Phi}(\omega_q)=A_{\Phi}^2\left( \frac{2\pi \cdot 1 Hz}{\omega_q} \right)^{\gamma_{\Phi}}$: noise spectral density with $A_{\Phi}^2\approx(10^{-6} \Phi_0)^2/$Hz~\cite{krantz2019} \\
+$S_{\Phi}(\omega_q)=A_{\Phi}^2\left( \frac{2\pi \cdot 1 Hz}{\omega_q} \right)^{\gamma_{\Phi}}$: noise spectral density with $A_{\Phi}^2\approx(10^{-6} \Phi_0)^2/$Hz and $\gamma_{\Phi} \approx 0.8 - 1$~\cite{krantz2019} \\
 \hline
 Purcell effect & We don't include the purcell effect as we exclude external control and readout circuitry from our analysis. 
 & For transmon, contribution to  $T_1 \sim 16$ $\mu$s~\cite{koch2007}  \\

@@ -68,6 +68,7 @@ class CircuitQ:
         self.loop_fluxes = dict()
         self.cos_charge_dict = dict()
         self.offset_dict = dict()
+        self.v = None
         self.h, self.h_parameters, self.h_imp = self.get_classical_hamiltonian()
         self.n_dim = None
         self.n_cutoff = None
@@ -81,6 +82,7 @@ class CircuitQ:
         self.input_num_list = []
         self.phi_num_dict = dict()
         self.h_num = None
+        self.v_num_list = []
         self.n_eig = None
         self.evals = None
         self.estates = None
@@ -88,7 +90,10 @@ class CircuitQ:
         self.excited_level = None
         self.T_mtx = None
         self.estates_in_phi_basis = []
+        self.ground_state = None
+        self.omega_q = None
         self.T1_quasiparticle = None
+        self.T1_charge = None
 
     def get_classical_hamiltonian(self):
         """
@@ -545,6 +550,11 @@ class CircuitQ:
         if self.print_feedback:
             print("The parameters of the circuit are " + str(h_parameters))
 
+        # =============================================================================
+        # Define voltage operator
+        # =============================================================================
+        self.v = q_vec_without_offset.transpose()*self.c_matrix_inv
+
         return h, h_parameters, h_imp
 
 
@@ -790,6 +800,14 @@ class CircuitQ:
                               cos_charge_matrices + _parameter_values
         self.h_num = h_num_lambda(*self.input_num_list)
 
+        # =============================================================================
+        # Define numerical voltage operator via lambdify
+        # =============================================================================
+        for element in self.v:
+            num_element = sp.lambdify(q_list + self.h_parameters, element, modules = ['numpy'])
+            input_num = q_matrices + self.parameter_values
+            self.v_num_list.append(num_element(*input_num))
+
         return self.h_num
 
     def get_eigensystem(self, n_eig = 30):
@@ -950,6 +968,33 @@ class CircuitQ:
         self.estates_in_phi_basis = transformed_estates
         return self.estates_in_phi_basis
 
+    def _qubit_states_energy(self):
+        """
+        Returns the ground state, the number of the excited level and the qubit energy
+        and writes these parameters in self.
+
+        Parameters
+        ----------
+        No external parameters.
+
+        Returns
+        ----------
+        ground_state: array
+            Ground state as an array
+        excited_level: int
+            Number of default excited level, which is the first state above ground state.
+        omega_q: float
+            Qubit energy (difference between excited level and ground state energy.
+        """
+        ground_state = self.estates[:,0]
+        if self.anharmonicity is None:
+            self.get_spectrum_anharmonicity()
+        excited_level = self.excited_level
+        omega_q = abs(self.evals[excited_level]-self.evals[0])
+        self.ground_state = ground_state
+        self.omega_q = omega_q
+        return self.ground_state, self.excited_level, self.omega_q
+
     def get_T1_quasiparticles(self, excited_level=None):
         """
         Estimates the T1 contribution due to quasiparticles. See the noise.pdf file in the notes
@@ -957,7 +1002,7 @@ class CircuitQ:
 
         Parameters
         ----------
-        excited_level: int (Default Number of first state above the groundstate)
+        excited_level: int (Default: Number of first state above the groundstate)
             Number of state, which is considered to be the excited state.
 
         Returns
@@ -973,16 +1018,10 @@ class CircuitQ:
         delta = 1.76*T_c*k_b #superconducting gap
         # T = 20e-3 #K
         x_qp = 1e-7 #np.sqrt(2*np.pi*k_b*T/delta)*np.exp(-delta/(k_b*T))
-
-        # =============================================================================
-        # Define groundstate, excited state and qubit transition
-        # =============================================================================
-        ground_state = self.estates[:,0]
+        if self.ground_state is None:
+            self._qubit_states_energy()
         if excited_level is None:
-            if self.anharmonicity is None:
-                self.get_spectrum_anharmonicity()
             excited_level = self.excited_level
-        omega_q = abs(self.evals[excited_level]-self.evals[0])
 
         # =============================================================================
         # Calculate T1 contribution
@@ -1024,12 +1063,46 @@ class CircuitQ:
             # =====================================================================
             for n_j, energy in enumerate(energies):
                 E_J = self.parameter_values[self.h_parameters.index(energy)]
-                braket = np.dot(ground_state.conjugate().transpose(), eigs_shifted[:,excited_level])
+                braket = np.dot(self.ground_state.conjugate().transpose(),
+                                eigs_shifted[:,excited_level])
                 T1_inv += abs(braket) ** 2 * x_qp * (8 * E_J/ (self.hbar * 2 * np.pi)) * np.sqrt(
-                    8*delta / omega_q)
+                    8*delta / self.omega_q)
         if T1_inv==0:
             T1 = None
         else:
             T1 = 1/T1_inv
         self.T1_quasiparticle = T1
         return self.T1_quasiparticle
+
+    def get_T1_charge(self, excited_level=None):
+
+        # =============================================================================
+        # Set numerical values for parameters
+        # =============================================================================
+        gamma_q = 1
+        A_q = self.e*1e-3
+        S_q = A_q**2 * (2*np.pi*self.hbar/self.omega_q)**gamma_q
+
+        # =============================================================================
+        # Set ground state and excited state
+        # =============================================================================
+        if self.ground_state is None:
+            self._qubit_states_energy()
+        if excited_level is None:
+            excited_level = self.excited_level
+        ground_state = spa.csr_matrix(self.ground_state)
+        excited_state = spa.csr_matrix(self.estates[:,excited_level])
+
+        # =============================================================================
+        # Calculate T1 contribution
+        # =============================================================================
+        T1_inv = 0
+        for voltage_element in self.v_num_list:
+            T1_inv += S_q/self.hbar**2 * abs((excited_state.conjugate()*voltage_element*
+                                             ground_state.transpose()).data[0])**2
+        if T1_inv==0:
+            T1 = None
+        else:
+            T1 = 1/T1_inv
+        self.T1_charge = T1
+        return self.T1_charge
