@@ -1,4 +1,5 @@
 import copy
+import warnings
 import networkx as nx
 import circuitq.functions_file as my
 import sympy as sp
@@ -67,7 +68,9 @@ class CircuitQ:
         self.charge_basis_nodes = []
         self.loop_fluxes = dict()
         self.cos_charge_dict = dict()
+        self.sin_charge_dict = dict()
         self.offset_dict = dict()
+        self.current_operators_imp = []
         self.v = None
         self.h, self.h_parameters, self.h_imp = self.get_classical_hamiltonian()
         self.n_dim = None
@@ -83,17 +86,20 @@ class CircuitQ:
         self.phi_num_dict = dict()
         self.h_num = None
         self.v_num_list = []
+        self.current_operators_num = []
         self.n_eig = None
         self.evals = None
         self.estates = None
         self.anharmonicity = None
         self.excited_level = None
+        self.excited_subspace = []
         self.T_mtx = None
         self.estates_in_phi_basis = []
         self.ground_state = None
         self.omega_q = None
         self.T1_quasiparticle = None
         self.T1_charge = None
+        self.T1_flux = None
 
     def get_classical_hamiltonian(self):
         """
@@ -398,11 +404,13 @@ class CircuitQ:
                         if 'C' in p_e[3]['element']:
                             parallel_c = p_e
                             break
+                    closure_branch = False
                     if parallel_c in spanning_trees_edges[n_sg] and parallel_c not in used_c:
                         var = self.phi_dict[v] - self.phi_dict[u]
                         # Store capacitances that have been used s.t. parallel L/J have loop flux
                         used_c.append(parallel_c)
                     else:
+                        closure_branch = True
                         if (str(u) + str(v) not in nbr_loop_fluxes.keys()
                             or str(v) + str(u) not in nbr_loop_fluxes.keys()):
                             nbr_l_f = 0
@@ -426,6 +434,8 @@ class CircuitQ:
                         self.inductances[str(u) + str(v)].append(inductance)
                         pot_energy += var**2/(2*inductance)
                         pot_energy_imp += var**2/(2*inductance)
+                        if closure_branch:
+                            self.current_operators_imp.append(var/inductance)
                     if 'J' in element:
                         if ((u,v)) not in self.josephson_energies.keys():
                             self.josephson_energies[(u,v)] = []
@@ -441,10 +451,18 @@ class CircuitQ:
                                 self.charge_basis_nodes.append(u)
                             if v not in self.charge_basis_nodes:
                                 self.charge_basis_nodes.append(v)
-                            self.cos_charge_dict[cos_charge] = (u,v)
+                            self.cos_charge_dict[(u,v,number_j)] = cos_charge
                             pot_energy_imp -= josesphson_energy * cos_charge
+                            if closure_branch:
+                                sin_charge = sp.symbols('sin_{' + str(u) + str(v) + str(number_j) + '}')
+                                self.sin_charge_dict[(u,v,number_j)] = sin_charge
+                                self.current_operators_imp.append(2 * self.e * josesphson_energy / self.hbar
+                                                                  * sin_charge)
                         else:
                             pot_energy_imp -= josesphson_energy * sp.cos(var/self.phi_0)
+                            if closure_branch:
+                                self.current_operators_imp.append(2*self.e*josesphson_energy/self.hbar
+                                                                  * sp.sin(var/self.phi_0))
 
         # =============================================================================
         # Define C matrix and q vector
@@ -523,7 +541,7 @@ class CircuitQ:
 
         # =============================================================================
         # Define Hamiltonian for numerical implementation with
-        # seperated quadratic charges
+        # seperated quadratic charges.
         # The offset is not explicitly given here,
         # but is implemented in the numerical matrices in get_numerical_hamiltonian
         # =============================================================================
@@ -585,9 +603,10 @@ class CircuitQ:
         # =============================================================================
         if grid_length is None:
             grid_length = 4 * np.pi * self.phi_0
+        n_dim = int(n_dim)
         if n_dim % 2 == 0:
             n_dim = int(n_dim+1)
-        self.n_dim = n_dim
+        self.n_dim = int(n_dim)
         self.grid_length = grid_length
         # =============================================================================
         # Define matrix functions
@@ -637,6 +656,11 @@ class CircuitQ:
         def mtx_cos(m):
             m_dia = m.diagonal()
             return spa.diags(np.cos(m_dia), format='csr')
+
+        # sin function
+        def mtx_sin(m):
+            m_dia = m.diagonal()
+            return spa.diags(np.sin(m_dia), format='csr')
 
         # Charge matrix
         def q_mtx(n_cutoff):
@@ -694,13 +718,15 @@ class CircuitQ:
         # =============================================================================
         phi_matrices, q_matrices, q_quadratic_matrices = [], [], []
         cos_charge_matrices = []
+        sin_charge_matrices = []
         phi_list, q_list, q_quadratic_list = [], [], [] # without ground, input for lambdify
         cos_charge_list = []
+        sin_charge_list = []
         nbr_subsystems = len(self.nodes_wo_ground)
-        self.n_cutoff = int((n_dim-1) / 2 )
+        self.n_cutoff = int((self.n_dim-1) / 2 )
         self.flux_list = np.linspace(-self.grid_length, self.grid_length, self.n_dim)
         self.charge_list = 2*self.e*np.arange(-self.n_cutoff, self.n_cutoff+1)
-        mtx_id_list = [np.identity(n_dim) for n in range(nbr_subsystems)]
+        mtx_id_list = [np.identity(self.n_dim) for n in range(nbr_subsystems)]
         n_mtx_list = 0
         # q-matrices in charge and flux basis, phi-matrices (flux basis)
         # =============================================================================
@@ -725,20 +751,20 @@ class CircuitQ:
                         mtx_list[n_mtx_list] = -1j*self.hbar*der_mtx(self.flux_list,
                                                                      periodic=False)
                     if n in self.offset_nodes:
-                         mtx_list[n_mtx_list] += offset * spa.identity(n_dim)
+                         mtx_list[n_mtx_list] += offset * spa.identity(self.n_dim)
                 elif var_type=='q_quadratic':
                     if n in self.charge_basis_nodes:
                         mtx_list[n_mtx_list] = q_mtx(self.n_cutoff)**2
                         if n in self.offset_nodes:
                             mtx_list[n_mtx_list] = (q_mtx(self.n_cutoff) +
-                                                         offset * spa.identity(n_dim)) ** 2
+                                                         offset * spa.identity(self.n_dim)) ** 2
                     else:
                         mtx_list[n_mtx_list] = -1*(self.hbar**2)*scnd_der_mtx(self.flux_list,
                                                                             periodic=False)
                         if n in self.offset_nodes:
                             mtx_list[n_mtx_list] += (-2*offset *1j*self.hbar*der_mtx(self.flux_list,
                                                                      periodic=False) +
-                                                    offset**2 * spa.identity(n_dim) )
+                                                    offset**2 * spa.identity(self.n_dim) )
                 mtx_num = kron_product(mtx_list)
                 if var_type=='phi':
                     self.phi_num_dict[n] = mtx_num
@@ -752,9 +778,9 @@ class CircuitQ:
                     q_quadratic_matrices.append(mtx_num)
                     q_quadratic_list.append(self.q_quadratic_dict[n])
             n_mtx_list += 1
-        # cos-matrices (charge basis)
+        # cos- and sin-matrices (charge basis)
         # =============================================================================
-        for cos, indices in self.cos_charge_dict.items():
+        for indices, cos in self.cos_charge_dict.items():
             mtx_list = copy.deepcopy(mtx_id_list)
             if indices[0] not in self.ground_nodes:
                 pos_u = self.subspace_pos[indices[0]]
@@ -764,15 +790,20 @@ class CircuitQ:
                 mtx_list[pos_v] = cmplx_exp_phi_mtx(self.n_cutoff)
             mtx_num = kron_product(mtx_list)
             loop_flux = 0
-            for key, value in self.loop_fluxes.items():
-                if ((key[0]==indices[0] and key[1]==indices[1])
-                    or (key[0]==indices[1] and key[1]==indices[0])):
-                    parameter_pos = self.h_parameters.index(value)
+            if indices in self.loop_fluxes_in_cos_arg.keys():
+                for loop_flux_index in self.loop_fluxes_in_cos_arg[indices]:
+                    l_f = self.loop_fluxes[loop_flux_index]
+                    parameter_pos = self.h_parameters.index(l_f)
                     loop_flux += self.parameter_values[parameter_pos]
             mtx_num = np.exp(-1j*loop_flux/self.phi_0) * mtx_num
-            mtx_num = 0.5*(mtx_num + mtx_num.getH())
-            cos_charge_matrices.append(mtx_num)
+            mtx_num_cos = 0.5*(mtx_num + mtx_num.getH())
+            cos_charge_matrices.append(mtx_num_cos)
             cos_charge_list.append(cos)
+            if indices in self.sin_charge_dict.keys():
+                mtx_num_sin = 0.5j*(mtx_num.getH()-mtx_num)
+                sin_charge_matrices.append(mtx_num_sin)
+                sin_charge_list.append(self.sin_charge_dict[indices])
+
         # numerical matrices for offset flux (flux basis)
         # =============================================================================
         _parameter_values = copy.deepcopy(self.parameter_values)
@@ -787,7 +818,7 @@ class CircuitQ:
                 if self.phi_dict[n] == 0:
                     continue
                 mtx_list[self.subspace_pos[n]] = (self.parameter_values[parameter_pos]*
-                                                spa.identity(n_dim))
+                                                spa.identity(self.n_dim))
             mtx_num = kron_product(mtx_list)
             self.loop_fluxes_num[key] = mtx_num
             _parameter_values[parameter_pos] = mtx_num
@@ -807,6 +838,15 @@ class CircuitQ:
             num_element = sp.lambdify(q_list + self.h_parameters, element, modules = ['numpy'])
             input_num = q_matrices + self.parameter_values
             self.v_num_list.append(num_element(*input_num))
+
+        # =============================================================================
+        # Define numerical current operator via lambdify
+        # =============================================================================
+        for element in self.current_operators_imp:
+            num_element = sp.lambdify(phi_list + sin_charge_list + self.h_parameters,
+                                      element, modules = [{'sin': mtx_sin}, 'numpy'])
+            input_num = phi_matrices + sin_charge_matrices + _parameter_values
+            self.current_operators_num.append(num_element(*input_num))
 
         return self.h_num
 
@@ -830,7 +870,10 @@ class CircuitQ:
         if n_eig > dim_total-2:
             n_eig = dim_total - 2
         self.n_eig = n_eig
+        v0 = [0]*dim_total
+        v0[0] = 1
         evals, estates = spa.linalg.eigsh(self.h_num, k=self.n_eig, which='SA')
+                                          # v0=v0)
         idx_sort = np.argsort(evals)
         self.evals = evals[idx_sort]
         self.estates = estates[:, idx_sort]
@@ -863,14 +906,22 @@ class CircuitQ:
         # as excited level
         while abs(self.evals[excited_level]-self.evals[0]) <= abs(self.evals[0]*10**(-3)):
             excited_level += 1
+        if excited_level >1:
+            warnings.warn("The ground state seems to be degenerated. "
+                          "This has an unfortunate effect on the T1 times.")
         if excited_level == len(self.evals)-1:
             raise Exception("All states in self.evals are degenerated")
         self.excited_level = excited_level
+        self.excited_subspace.append(excited_level)
         current_level = excited_level
         check_level = 2
         for k in range(excited_level + 1, len(self.evals)):
             if (abs(self.evals[current_level] - self.evals[k])
                     <= abs(self.evals[current_level]*10**(-3))):
+                if current_level == excited_level:
+                    self.excited_subspace.append(k)
+                    warnings.warn("The excited state seems to be degenerated. "
+                                  "This has an unfortunate effect on the T1 times.")
                 continue
             else:
                 current_level = k
@@ -1076,6 +1127,7 @@ class CircuitQ:
 
     def get_T1_charge(self, excited_level=None):
 
+        self._qubit_states_energy()
         # =============================================================================
         # Set numerical values for parameters
         # =============================================================================
@@ -1106,3 +1158,37 @@ class CircuitQ:
             T1 = 1/T1_inv
         self.T1_charge = T1
         return self.T1_charge
+
+
+    def get_T1_flux(self, excited_level=None):
+
+        # =============================================================================
+        # Set numerical values for parameters
+        # =============================================================================
+        gamma_phi = .8
+        A_phi = self.phi_0*1e-6
+        S_phi = A_phi**2 * (2*np.pi*self.hbar/self.omega_q)**gamma_phi
+
+        # =============================================================================
+        # Set ground state and excited state
+        # =============================================================================
+        if self.ground_state is None:
+            self._qubit_states_energy()
+        if excited_level is None:
+            excited_level = self.excited_level
+        ground_state = spa.csr_matrix(self.ground_state)
+        excited_state = spa.csr_matrix(self.estates[:,excited_level])
+
+        # =============================================================================
+        # Calculate T1 contribution
+        # =============================================================================
+        T1_inv = 0
+        for current_element in self.current_operators_num:
+            T1_inv += S_phi/self.hbar**2 * abs((excited_state.conjugate()*current_element*
+                                             ground_state.transpose()).data[0])**2
+        if T1_inv==0:
+            T1 = None
+        else:
+            T1 = 1/T1_inv
+        self.T1_flux = T1
+        return self.T1_flux
