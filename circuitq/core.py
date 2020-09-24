@@ -2,6 +2,7 @@ import copy
 import warnings
 import networkx as nx
 import circuitq.functions_file as my
+import math
 import sympy as sp
 import qutip as qt
 import numpy as np
@@ -12,8 +13,8 @@ class CircuitQ:
     """
     A class corresponding to a superconducting circuit.
     """
-    def __init__(self, circuit_graph, ground_nodes = [],
-                 offset_nodes = [], force_flux_nodes=[],
+    def __init__(self, circuit_graph, ground_nodes = None,
+                 offset_nodes = None, force_flux_nodes=None,
                  print_feedback=False):
         """
         Creates a circuit from a given graph.
@@ -48,9 +49,9 @@ class CircuitQ:
         c_v["E"] = 50 * c_v["E_C"]
         self.c_v = c_v
         self.phi_0 = self.hbar/(2*self.e)
-        self.ground_nodes = ground_nodes
-        self.offset_nodes = offset_nodes
-        self.force_flux_nodes = force_flux_nodes
+        self.ground_nodes = ground_nodes if ground_nodes is not None else []
+        self.offset_nodes = offset_nodes if offset_nodes is not None else []
+        self.force_flux_nodes = force_flux_nodes if force_flux_nodes is not None else []
         self.print_feedback = print_feedback
         self.delete_edges = []
         self.deleted_edges = []
@@ -72,6 +73,7 @@ class CircuitQ:
         self.offset_dict = dict()
         self.current_operators_imp = []
         self.v = None
+        self.pot_energy_imp = None
         self.h, self.h_parameters, self.h_imp = self.get_classical_hamiltonian()
         self.n_dim = None
         self.n_cutoff = None
@@ -84,6 +86,7 @@ class CircuitQ:
         self.parameter_values_dict = dict()
         self.input_num_list = []
         self.phi_num_dict = dict()
+        self.potential = None
         self.h_num = None
         self.v_num_list = []
         self.current_operators_num = []
@@ -93,6 +96,7 @@ class CircuitQ:
         self.anharmonicity = None
         self.excited_level = None
         self.excited_subspace = []
+        self.degenerated = False
         self.T_mtx = None
         self.estates_in_phi_basis = []
         self.ground_state = None
@@ -315,22 +319,29 @@ class CircuitQ:
         spanning_trees_edges = [list(s_t) for s_t in spanning_trees]
 
         # =============================================================================
+        # Define a node with only one neighbour as a ground node if the neighbour is
+        # not a ground node yet.
         # Define an active node as ground if no ground nodes are given.
         # Otherwise: Check that given ground nodes are active.
         # =============================================================================
         self.nodes = list(self.circuit_graph.nodes())
+        active_nodes = []
         for node in self.nodes:
-            active_node = False
+            neighbor_nodes = list(self.circuit_graph.neighbors(node))
+            if len(neighbor_nodes) == 1:
+                neighbor = neighbor_nodes[0]
+                if (node not in self.ground_nodes and
+                    neighbor not in self.ground_nodes):
+                    self.ground_nodes.append(node)
             incoming_edges = self.circuit_graph.edges(node, keys=True, data=True)
             for e in incoming_edges:
                 if 'C' not in e[3]['element']: # Active node (There are C anyways)
-                    active_node = True
-                    if len(self.ground_nodes) == 0:
-                            self.ground_nodes.append(0)
-                            break
-            if not active_node and node in self.ground_nodes:
+                    active_nodes.append(node)
+            if node in self.ground_nodes and node not in active_nodes:
                 raise Exception("Specified ground node " + str(node) +
                                 " is not an active node.")
+        if len(self.ground_nodes) == 0:
+            self.ground_nodes.append(active_nodes[0])
 
         # =============================================================================
         # Define flux variables
@@ -555,6 +566,7 @@ class CircuitQ:
         h_kin_sep += 0.5*(q_vec_without_offset.transpose()*c_matrix_inv_sep*
                           q_vec_without_offset)[0]
         h_imp = h_kin_sep + pot_energy_imp
+        self.pot_energy_imp = pot_energy_imp
 
         # =============================================================================
         # Get list of parameter in the Hamiltonian
@@ -577,7 +589,7 @@ class CircuitQ:
 
 
     def get_numerical_hamiltonian(self, n_dim, grid_length = None,
-                                  parameter_values = None):
+                                  parameter_values = None, default_zero = True):
         """
         Creates a numerical representation of the Hamiltonian using the
         finite difference method.
@@ -592,6 +604,8 @@ class CircuitQ:
             The coordinate grid is taken from -grid_length to +grid_length in n_dim steps
         parameter_values: list
             Numerical values of system parameters (corresponds to self.h_parameters)
+        default_zero: bool (Default True)
+
 
         Returns
         ----------
@@ -702,9 +716,15 @@ class CircuitQ:
                         else:
                             parameter_values[n] = value
                         break
-                if ('tilde' in str(self.h_parameters[n])
-                        or 'qo' in str(self.h_parameters[n])):
+                if (('tilde' in str(self.h_parameters[n])
+                        or 'qo' in str(self.h_parameters[n]))
+                    and default_zero is True):
                     parameter_values[n] = 0
+                elif 'tilde' in str(self.h_parameters[n]):
+                    parameter_values[n] = np.pi*self.phi_0
+                elif 'qo' in str(self.h_parameters[n]):
+                    parameter_values[n] = 2*self.e
+
         if any(p is False for p in parameter_values):
             raise Exception("Parameter type might have not been recognized.")
         self.parameter_values = parameter_values
@@ -822,6 +842,19 @@ class CircuitQ:
             mtx_num = kron_product(mtx_list)
             self.loop_fluxes_num[key] = mtx_num
             _parameter_values[parameter_pos] = mtx_num
+
+        # =============================================================================
+        # If problem is 1D and formulated in phi-basis:
+        # Potential as a List
+        # =============================================================================
+        if nbr_subsystems == 1 and len(self.charge_basis_nodes) == 0:
+            input_list = phi_list + self.h_parameters
+            potential_lambda = sp.lambdify(phi_list + self.h_parameters,
+                                           self.pot_energy_imp)
+            potential = [potential_lambda(flux, *self.parameter_values) for flux in
+                         self.flux_list]
+            self.potential = potential/ max(potential)
+
         # =============================================================================
         # Define numerical Hamiltonian via lambdify
         # =============================================================================
@@ -872,8 +905,8 @@ class CircuitQ:
         self.n_eig = n_eig
         v0 = [0]*dim_total
         v0[0] = 1
-        evals, estates = spa.linalg.eigsh(self.h_num, k=self.n_eig, which='SA')
-                                          # v0=v0)
+        evals, estates = spa.linalg.eigsh(self.h_num, k=self.n_eig, which='SA'#)
+                                          ,v0=v0)
         idx_sort = np.argsort(evals)
         self.evals = evals[idx_sort]
         self.estates = estates[:, idx_sort]
@@ -904,11 +937,14 @@ class CircuitQ:
         excited_level = 1
         # Define first non-degenerate state which is higher then groundstate
         # as excited level
-        while abs(self.evals[excited_level]-self.evals[0]) <= abs(self.evals[0]*10**(-3)):
+        tolerance = 0.05    #*100 gives tolerance in percentage for comparison of the
+                            # states to check for degeneracy
+        while math.isclose(self.evals[excited_level], self.evals[0], rel_tol=tolerance):
             excited_level += 1
         if excited_level >1:
             warnings.warn("The ground state seems to be degenerated. "
                           "This has an unfortunate effect on the T1 times.")
+            self.degenerated = True
         if excited_level == len(self.evals)-1:
             raise Exception("All states in self.evals are degenerated")
         self.excited_level = excited_level
@@ -916,17 +952,17 @@ class CircuitQ:
         current_level = excited_level
         check_level = 2
         for k in range(excited_level + 1, len(self.evals)):
-            if (abs(self.evals[current_level] - self.evals[k])
-                    <= abs(self.evals[current_level]*10**(-3))):
+            if math.isclose(self.evals[current_level], self.evals[k], rel_tol=tolerance):
                 if current_level == excited_level:
                     self.excited_subspace.append(k)
                     warnings.warn("The excited state seems to be degenerated. "
                                   "This has an unfortunate effect on the T1 times.")
+                    self.degenerated = True
                 continue
             else:
                 current_level = k
                 check_level += 1
-            for l in range(1,k):
+            for l in range(excited_level,k):
                 quotient = abs((self.evals[k]-self.evals[l])/(self.evals[excited_level]-self.evals[0]))
                 if quotient >= 2:
                     quotient = 2
@@ -934,10 +970,15 @@ class CircuitQ:
             if check_level >= nbr_check_levels:
                 break
         if check_level < nbr_check_levels:
-            raise Exception("Not enough eigenenergies to check spectrum for nbr_check_levels")
-        for quotient in quotients:
-            distances_to_1.append(abs(1-quotient))
-        self.anharmonicity = min(distances_to_1)
+            if self.degenerated:
+                warnings.warn("Not enough eigenenergies to check spectrum for nbr_check_levels."
+                              "However at least one of the qubit states is degenerated anyway.")
+            else:
+                raise Exception("Not enough eigenenergies to check spectrum for nbr_check_levels")
+        if len(quotients) > 0:
+            for quotient in quotients:
+                distances_to_1.append(abs(1-quotient))
+            self.anharmonicity = min(distances_to_1)
 
         return self.anharmonicity
 
@@ -1038,8 +1079,7 @@ class CircuitQ:
             Qubit energy (difference between excited level and ground state energy.
         """
         ground_state = self.estates[:,0]
-        if self.anharmonicity is None:
-            self.get_spectrum_anharmonicity()
+        self.get_spectrum_anharmonicity()
         excited_level = self.excited_level
         omega_q = abs(self.evals[excited_level]-self.evals[0])
         self.ground_state = ground_state
@@ -1064,15 +1104,14 @@ class CircuitQ:
         # =============================================================================
         # Set numerical values for parameters
         # =============================================================================
+        self._qubit_states_energy()
+        if excited_level is None:
+            excited_level = self.excited_level
         T_c = 1.2 #K
         k_b = 1.380649e-23 #J/K
         delta = 1.76*T_c*k_b #superconducting gap
         # T = 20e-3 #K
         x_qp = 1e-7 #np.sqrt(2*np.pi*k_b*T/delta)*np.exp(-delta/(k_b*T))
-        if self.ground_state is None:
-            self._qubit_states_energy()
-        if excited_level is None:
-            excited_level = self.excited_level
 
         # =============================================================================
         # Calculate T1 contribution
@@ -1126,11 +1165,24 @@ class CircuitQ:
         return self.T1_quasiparticle
 
     def get_T1_charge(self, excited_level=None):
+        """
+        Estimates the T1 contribution due to charge noise. See the noise.pdf file in the notes
+        folder for more details about the formulas that have been used for this method.
 
-        self._qubit_states_energy()
+        Parameters
+        ----------
+        excited_level: int (Default: Number of first state above the groundstate)
+            Number of state, which is considered to be the excited state.
+
+        Returns
+        ----------
+        T1_charge: float
+            T1 contribution due to charge noise.
+        """
         # =============================================================================
         # Set numerical values for parameters
         # =============================================================================
+        self._qubit_states_energy()
         gamma_q = 1
         A_q = self.e*1e-3
         S_q = A_q**2 * (2*np.pi*self.hbar/self.omega_q)**gamma_q
@@ -1138,8 +1190,6 @@ class CircuitQ:
         # =============================================================================
         # Set ground state and excited state
         # =============================================================================
-        if self.ground_state is None:
-            self._qubit_states_energy()
         if excited_level is None:
             excited_level = self.excited_level
         ground_state = spa.csr_matrix(self.ground_state)
@@ -1149,9 +1199,22 @@ class CircuitQ:
         # Calculate T1 contribution
         # =============================================================================
         T1_inv = 0
+
         for voltage_element in self.v_num_list:
             T1_inv += S_q/self.hbar**2 * abs((excited_state.conjugate()*voltage_element*
                                              ground_state.transpose()).data[0])**2
+
+        # Safely delete this paragraph after debug
+        # print("============== DEBUG")
+        # print("S_q =", S_q)
+        # print("Matrix element = ", abs((excited_state.conjugate()*voltage_element*
+        #                                      ground_state.transpose()).data[0])**2)
+        # print("Ground State =", self.ground_state[30:50])
+        # print("Excited State =", self.estates[:,excited_level][30:50])
+        # print("v_num:", self.v_num_list)
+        # print("============== DEBUG END")
+        ####
+
         if T1_inv==0:
             T1 = None
         else:
@@ -1161,10 +1224,24 @@ class CircuitQ:
 
 
     def get_T1_flux(self, excited_level=None):
+        """
+        Estimates the T1 contribution due to flux noise. See the noise.pdf file in the notes
+        folder for more details about the formulas that have been used for this method.
 
+        Parameters
+        ----------
+        excited_level: int (Default: Number of first state above the groundstate)
+            Number of state, which is considered to be the excited state.
+
+        Returns
+        ----------
+        T1_flux: float
+            T1 contribution due to flux noise.
+        """
         # =============================================================================
         # Set numerical values for parameters
         # =============================================================================
+        self._qubit_states_energy()
         gamma_phi = .8
         A_phi = self.phi_0*1e-6
         S_phi = A_phi**2 * (2*np.pi*self.hbar/self.omega_q)**gamma_phi
@@ -1172,8 +1249,6 @@ class CircuitQ:
         # =============================================================================
         # Set ground state and excited state
         # =============================================================================
-        if self.ground_state is None:
-            self._qubit_states_energy()
         if excited_level is None:
             excited_level = self.excited_level
         ground_state = spa.csr_matrix(self.ground_state)

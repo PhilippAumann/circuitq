@@ -21,13 +21,13 @@ graph.add_edge(0,1, element = 'L')
 # Numerical Implementation
 # =============================================================================
 circuit = cq.CircuitQ(graph)
-phi_ext = 0#np.pi*circuit.phi_0
-circuit.get_numerical_hamiltonian(400,
-          parameter_values=[False, False, False, phi_ext])
-eigv, eigs = circuit.get_eigensystem()
-print(circuit.get_T1_quasiparticles())
-print(circuit.get_T1_charge())
-print(circuit.get_T1_flux())
+# phi_ext = 0#np.pi*circuit.phi_0
+# circuit.get_numerical_hamiltonian(400,
+#           parameter_values=[False, False, False, phi_ext])
+# eigv, eigs = circuit.get_eigensystem()
+# print(circuit.get_T1_quasiparticles())
+# print(circuit.get_T1_charge())
+# print(circuit.get_T1_flux())
 
 # =============================================================================
 # current operator as a function of dimension
@@ -220,32 +220,32 @@ print(circuit.get_T1_flux())
 # T1 times as a function of dimension
 # =============================================================================
 
-dim_list = np.linspace(30,400,10)
-T1_qp,T1_c,T1_f = [],[],[]
-for dim in dim_list:
-    print("\nDimension =", int(dim))
-    circuit = cq.CircuitQ(graph)
-    # EJ = 2.5 * circuit.c_v["E"]
-    # alpha = 0.7
-    # C = circuit.c_v["C"]
-    # phi_ext = np.pi * circuit.phi_0
-    h_num = circuit.get_numerical_hamiltonian(dim,
-            parameter_values=[False, False, False, phi_ext])
-    eigv, eigs = circuit.get_eigensystem()
-    T1_qp.append(circuit.get_T1_quasiparticles())
-    T1_c.append(circuit.get_T1_charge())
-    T1_f.append(circuit.get_T1_flux())
-
-fig, ax1 = plt.subplots()
-ax2 = ax1.twinx()
-ax1.plot(dim_list, T1_qp, label="quasiparticle")
-ax1.plot(dim_list, T1_c, label="charge")
-ax2.plot(dim_list, T1_f, 'r-', label="flux")
-ax1.set_xlabel("Dimension")
-ax1.set_ylabel(r'$T_1$ in s')
-ax2.set_ylabel('$T_1$ in s')
-ax1.legend()
-ax2.legend()
-# plt.savefig("/Users/philipp/Dropbox (Personal)/"
-#             "CircuitDesign/figures/T1_dim_time.pdf")
-plt.show()
+# dim_list = np.linspace(30,400,10)
+# T1_qp,T1_c,T1_f = [],[],[]
+# for dim in dim_list:
+#     print("\nDimension =", int(dim))
+#     circuit = cq.CircuitQ(graph)
+#     # EJ = 2.5 * circuit.c_v["E"]
+#     # alpha = 0.7
+#     # C = circuit.c_v["C"]
+#     # phi_ext = np.pi * circuit.phi_0
+#     h_num = circuit.get_numerical_hamiltonian(dim,
+#             parameter_values=[False, False, False, phi_ext])
+#     eigv, eigs = circuit.get_eigensystem()
+#     T1_qp.append(circuit.get_T1_quasiparticles())
+#     T1_c.append(circuit.get_T1_charge())
+#     T1_f.append(circuit.get_T1_flux())
+#
+# fig, ax1 = plt.subplots()
+# ax2 = ax1.twinx()
+# ax1.plot(dim_list, T1_qp, label="quasiparticle")
+# ax1.plot(dim_list, T1_c, label="charge")
+# ax2.plot(dim_list, T1_f, 'r-', label="flux")
+# ax1.set_xlabel("Dimension")
+# ax1.set_ylabel(r'$T_1$ in s')
+# ax2.set_ylabel('$T_1$ in s')
+# ax1.legend()
+# ax2.legend()
+# # plt.savefig("/Users/philipp/Dropbox (Personal)/"
+# #             "CircuitDesign/figures/T1_dim_time.pdf")
+# plt.show()
