@@ -1,3 +1,4 @@
+import os, sys
 from setuptools import setup, find_packages
 
 setup(name='circuitq',
@@ -10,3 +11,6 @@ setup(name='circuitq',
       #     'qutip', 'numpy', 'networkx', 'sympy', 'scipy'
       #                   ],
       )
+
+local_package_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+sys.path.append(local_package_dir)

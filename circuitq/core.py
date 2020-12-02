@@ -853,7 +853,7 @@ class CircuitQ:
                                            self.pot_energy_imp)
             potential = [potential_lambda(flux, *self.parameter_values) for flux in
                          self.flux_list]
-            self.potential = potential/ max(potential)
+            self.potential = potential
 
         # =============================================================================
         # Define numerical Hamiltonian via lambdify

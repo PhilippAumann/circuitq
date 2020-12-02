@@ -77,9 +77,9 @@ def mc_search(n_dim, circuit_steps, parameter_steps, my_random,
         Lists the value of the cost function, the paramter values and
         the graph of the optimized instance.
     plot_data: list
-        List of lists for cost function plots with the following order:
+        List of lists for monitor plotting with the following order:
         initial_cost, accepted_circuits, refused_circuits,
-        accepted_parameters, refused_parameters
+        accepted_parameters, refused_parameters, graph_list
     """
     abs_data_path, abs_figure_path = create_directories(file_name)
     circuit, h_num, graph = initialize_fluxonium(n_dim)
@@ -93,6 +93,7 @@ def mc_search(n_dim, circuit_steps, parameter_steps, my_random,
     accepted_circuits, refused_circuits = [[],[]] , [[],[]]
     accepted_parameters, refused_parameters = [[],[]] , [[],[]]
     cost_contributions_list = []
+    graph_list = []
     with open(os.path.join(abs_data_path, 'search_data.pickle')
                 ,'wb') as data_file:
         for c_s in range(circuit_steps):
@@ -160,18 +161,19 @@ def mc_search(n_dim, circuit_steps, parameter_steps, my_random,
                 graph = new_graph
                 cost_ct = new_cost_ct
                 cq.visualize_circuit_general(new_graph, abs_figure_path + str(c_s) + '_accepted_circuit' )
+                graph_list.append((new_graph, str(c_s) + " accepted"))
                 if len(cost_list) > 0:
                     accepted_list.append([min(cost_list),values_list[cost_list.index(min((cost_list)))],
-                                          new_graph])
+                                          new_graph, c_s])
                 accepted_circuits[0].append(circuit_counter)
                 accepted_circuits[1].append(new_cost_ct)
             else:
                 print("\n graph refused\n")
                 cq.visualize_circuit_general(new_graph, abs_figure_path + str(c_s) + '_refused_circuit')
+                graph_list.append((new_graph, str(c_s) + " refused"))
                 refused_circuits[0].append(circuit_counter)
                 refused_circuits[1].append(new_cost_ct)
             circuit_counter += parameter_steps + 1
-    print("Accepted list:", accepted_list)
     if len(accepted_list) > 0:
         accepted_list = np.array(accepted_list)
         lowest_cost = min(accepted_list[:,0])
@@ -180,7 +182,7 @@ def mc_search(n_dim, circuit_steps, parameter_steps, my_random,
     else:
         winner_instance = None
     plot_data = [initial_cost, accepted_circuits, refused_circuits,
-                 accepted_parameters, refused_parameters]
+                 accepted_parameters, refused_parameters, graph_list]
 
     return winner_instance, plot_data, cost_contributions_list
 
