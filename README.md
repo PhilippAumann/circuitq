@@ -1,6 +1,8 @@
 # CircuitQ
 #### Automated design of superconducting qubits
 
+![Logo](/figures/CircuitQLogoText.pdf?raw=true "Optional Title")
+
 For exemplary usage see the notebooks folder.
 
 ### Recommended installation for developers (keeps package up to date)
