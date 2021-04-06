@@ -1,6 +1,6 @@
-# CircuitQ
 ![Logo](CirquitQLogoText.png)
-## Automated design of superconducting qubits
+# CircuitQ
+## Simulation and analysis of superconducting circuits
 
 For exemplary usage see the notebooks folder.
 

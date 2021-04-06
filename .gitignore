@@ -11,3 +11,6 @@ debug/*
 *.gz
 *.bbl
 *.blg
+
+notebooks/fluxqubit_coherence.ipynb
+notebooks/transmon_quasiparticle_tunneling.ipynb
