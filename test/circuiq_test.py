@@ -9,22 +9,25 @@ import scipy.sparse as spa
 # Define Circuit as Graph
 # =============================================================================
 graph = nx.MultiGraph()
-graph.add_edge(0,1, element = 'C')
-graph.add_edge(0,1, element = 'J')
-graph.add_edge(0,1, element = 'L')
-# graph.add_edge(1,2, element = 'C')
-# graph.add_edge(1,2, element = 'J')
-# graph.add_edge(0,2, element = 'C')
-# graph.add_edge(0,2, element = 'J')
+graph.add_edge(0,2, element = 'C')
+graph.add_edge(0,2, element = 'J')
+graph.add_edge(2,3, element = 'L')
+graph.add_edge(0,3, element = 'C')
+graph.add_edge(0,3, element = 'J')
+graph.add_edge(2,1, element = 'C')
+graph.add_edge(2,1, element = 'J')
+graph.add_edge(1,3, element = 'L')
 
 # =============================================================================
 # Numerical Implementation
 # =============================================================================
-circuit = cq.CircuitQ(graph)
-# phi_ext = 0#np.pi*circuit.phi_0
-# circuit.get_numerical_hamiltonian(400,
-#           parameter_values=[False, False, False, phi_ext])
-# eigv, eigs = circuit.get_eigensystem()
+circuit = cq.CircuitQ(graph, ground_nodes=[0])
+print(circuit.h_parameters)
+print(circuit.h)
+# circuit.get_numerical_hamiltonian(20,
+# parameter_values=[False, False, False, False, False,
+#                  False, False, False, False, False, 0.5*circuit.phi_0, False, False ])
+# eigv, eigs = circuit.get_eigensystem(10)
 # print(circuit.get_T1_quasiparticles())
 # print(circuit.get_T1_charge())
 # print(circuit.get_T1_flux())

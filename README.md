@@ -8,5 +8,5 @@ For exemplary usage see the notebooks folder.
 `python setup.py develop`
 
 ### To install the current version (run in project directory)
-`pip install circuitq`
+`pip install .`
 

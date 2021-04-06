@@ -48,6 +48,7 @@ class CircuitQ:
         c_v["E_C"] = self.e ** 2 / (2 * c_v["C"])
         c_v["E"] = 50 * c_v["E_C"]
         self.c_v = c_v
+        # The definition of phi_0 is not consistent in the literature (variant: h/(2e) )
         self.phi_0 = self.hbar/(2*self.e)
         self.ground_nodes = ground_nodes if ground_nodes is not None else []
         self.offset_nodes = offset_nodes if offset_nodes is not None else []
@@ -60,6 +61,7 @@ class CircuitQ:
         self.josephson_energies = dict()
         self.loop_fluxes_in_cos_arg = dict()
         self.get_classical_hamiltonian_run = False
+        self.spanning_trees_edges = []
         self.nodes = []
         self.nodes_wo_ground = []
         self.phi_dict = dict()
@@ -76,6 +78,7 @@ class CircuitQ:
         self.pot_energy_imp = None
         self.h, self.h_parameters, self.h_imp = self.get_classical_hamiltonian()
         self.n_dim = None
+        self.grid_length = None
         self.n_cutoff = None
         self.flux_list = []
         self.charge_list = []
@@ -317,6 +320,7 @@ class CircuitQ:
             spanning_tree = nx.minimum_spanning_edges(c_graph, keys=True, data=True)
             spanning_trees.append(spanning_tree)
         spanning_trees_edges = [list(s_t) for s_t in spanning_trees]
+        self.spanning_trees_edges = spanning_trees_edges
 
         # =============================================================================
         # Define a node with only one neighbour as a ground node if the neighbour is
@@ -382,7 +386,8 @@ class CircuitQ:
                         if neighbour == key:
                             neighbour = edge[0]
                         if (periodic_dict[neighbour] is False
-                            and edge[3]['element'] == 'J'):
+                            and edge[3]['element'] == 'J'
+                            and neighbour not in self.ground_nodes):
                             periodic_dict[key] = False
                             loop_break = True
                             break
@@ -390,6 +395,11 @@ class CircuitQ:
                     break
             if periodic_loop == periodic_dict:
                 changed_dict = False
+        # Set all ground nodes to periodic, to prevent the ground node from affecting
+        # the charge basis implementation
+        for node in self.ground_nodes:
+            periodic_dict[node] = True
+
         self.periodic = periodic_dict
 
         # =============================================================================
@@ -416,7 +426,12 @@ class CircuitQ:
                             parallel_c = p_e
                             break
                     closure_branch = False
-                    if parallel_c in spanning_trees_edges[n_sg] and parallel_c not in used_c:
+                    # Nodes of parallel_c could be permuted
+                    parallel_c_permuted = (parallel_c[1], parallel_c[0], parallel_c[2], parallel_c[3])
+                    if (parallel_c in spanning_trees_edges[n_sg] and
+                        parallel_c not in used_c) \
+                            or (parallel_c_permuted in spanning_trees_edges[n_sg]
+                                and parallel_c_permuted not in used_c):
                         var = self.phi_dict[v] - self.phi_dict[u]
                         # Store capacitances that have been used s.t. parallel L/J have loop flux
                         used_c.append(parallel_c)
@@ -622,6 +637,7 @@ class CircuitQ:
             n_dim = int(n_dim+1)
         self.n_dim = int(n_dim)
         self.grid_length = grid_length
+
         # =============================================================================
         # Define matrix functions
         # =============================================================================
@@ -838,7 +854,9 @@ class CircuitQ:
                 if self.phi_dict[n] == 0:
                     continue
                 mtx_list[self.subspace_pos[n]] = (self.parameter_values[parameter_pos]*
-                                                spa.identity(self.n_dim))
+                                                    spa.identity(self.n_dim))
+                # The offset should only be added once
+                break
             mtx_num = kron_product(mtx_list)
             self.loop_fluxes_num[key] = mtx_num
             _parameter_values[parameter_pos] = mtx_num
@@ -937,7 +955,7 @@ class CircuitQ:
         excited_level = 1
         # Define first non-degenerate state which is higher then groundstate
         # as excited level
-        tolerance = 0.05    #*100 gives tolerance in percentage for comparison of the
+        tolerance = 0.001    #*100 gives tolerance in percentage for comparison of the
                             # states to check for degeneracy
         while math.isclose(self.evals[excited_level], self.evals[0], rel_tol=tolerance):
             excited_level += 1
