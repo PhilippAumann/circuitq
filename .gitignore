@@ -5,6 +5,7 @@ notebooks/.ipynb_checkpoints/
 data/*
 figures/*
 debug/*
+optimization/*
 *.aux
 *.log
 *.out
@@ -14,3 +15,5 @@ debug/*
 
 notebooks/fluxqubit_coherence.ipynb
 notebooks/transmon_quasiparticle_tunneling.ipynb
+test/circuiq_test.py
+test/mc_search_test.py
