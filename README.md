@@ -1,12 +1,10 @@
-![Logo](CirquitQLogoText.png)
+![Logo](new_logo.png)
 # CircuitQ
 ## Simulation and analysis of superconducting circuits
 
-For exemplary usage see the notebooks folder.
+CircuitQ is an an open-source toolbox for the analysis of superconducting circuits implemented in Python. It features the automated construction of a symbolic Hamiltonian of the input circuit, as well as a dynamic numerical representation of this Hamiltonian with a variable basis choice. Additional features include the estimation of the T1 lifetimes of the circuit states under various noise mechanisms. The circuit quantization is both applicable to circuit inputs from a large design space and open-source.
 
-### Recommended installation for developers (keeps package up to date)
-`python setup.py develop`
+Please refer to the documentation for installation instructions and a guideline for using the toolbox ...include link... 
 
-### To install the current version (run in project directory)
-`pip install .`
+More details on physics and numerical implementation can be found on our preprint on arXiv ...include link...
 

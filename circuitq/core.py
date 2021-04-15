@@ -25,8 +25,6 @@ class CircuitQ:
             Graph representation of the circuit
             The edges have to have a specified element with keyword 'element'
             set to either 'C', 'L' or 'J'.
-        dimension: int (Default 5)
-            Dimension of the Sub-Hilbert spaces
         ground_nodes: list
             The nodes set as ground can be specified in a list.
             They have to be active nodes. If they are not specified, one node

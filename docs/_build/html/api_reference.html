@@ -1,0 +1,424 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>API reference &mdash; CircuitQ  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Tutorial" href="tutorial.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html">
+          
+
+          
+            
+            <img src="_static/new_logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="transmon_demo.html">Quick Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-circuitq.core">CircuitQ class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-circuitq.functions_file">circuitq.functions_file module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">CircuitQ</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>API reference</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/api_reference.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<section id="api-reference">
+<h1>API reference<a class="headerlink" href="#api-reference" title="Permalink to this headline">¶</a></h1>
+<section id="module-circuitq.core">
+<span id="circuitq-class"></span><h2>CircuitQ class<a class="headerlink" href="#module-circuitq.core" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="circuitq.core.CircuitQ">
+<em class="property"><span class="pre">class</span> </em><code class="sig-prename descclassname"><span class="pre">circuitq.core.</span></code><code class="sig-name descname"><span class="pre">CircuitQ</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">circuit_graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ground_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_flux_nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_feedback</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#circuitq.core.CircuitQ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class corresponding to a superconducting circuit.</p>
+<dl class="py method">
+<dt id="circuitq.core.CircuitQ.get_T1_charge">
+<code class="sig-name descname"><span class="pre">get_T1_charge</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">excited_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#circuitq.core.CircuitQ.get_T1_charge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimates the T1 contribution due to charge noise. See the noise.pdf file in the notes
+folder for more details about the formulas that have been used for this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>excited_level</strong> (<em>int</em><em> (</em><em>Default: Number of first state above the groundstate</em><em>)</em>) – Number of state, which is considered to be the excited state.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>T1_charge</strong> – T1 contribution due to charge noise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="circuitq.core.CircuitQ.get_T1_flux">
+<code class="sig-name descname"><span class="pre">get_T1_flux</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">excited_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#circuitq.core.CircuitQ.get_T1_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimates the T1 contribution due to flux noise. See the noise.pdf file in the notes
+folder for more details about the formulas that have been used for this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>excited_level</strong> (<em>int</em><em> (</em><em>Default: Number of first state above the groundstate</em><em>)</em>) – Number of state, which is considered to be the excited state.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>T1_flux</strong> – T1 contribution due to flux noise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="circuitq.core.CircuitQ.get_T1_quasiparticles">
+<code class="sig-name descname"><span class="pre">get_T1_quasiparticles</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">excited_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#circuitq.core.CircuitQ.get_T1_quasiparticles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimates the T1 contribution due to quasiparticles. See the noise.pdf file in the notes
+folder for more details about the formulas that have been used for this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>excited_level</strong> (<em>int</em><em> (</em><em>Default: Number of first state above the groundstate</em><em>)</em>) – Number of state, which is considered to be the excited state.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>T1_quasiparticle</strong> – T1 contribution due to quasiparticles.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="circuitq.core.CircuitQ.get_classical_hamiltonian">
+<code class="sig-name descname"><span class="pre">get_classical_hamiltonian</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#circuitq.core.CircuitQ.get_classical_hamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a Hamiltonian as a Sympy-function for the circuit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>external parameters.</strong> (<em>No</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>h</strong> (<em>Sympy Add</em>) – Symbolic Hamiltonian of the circuit</p></li>
+<li><p><strong>h_parameters</strong> (<em>list</em>) – List of parameters in the Hamiltonian</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="circuitq.core.CircuitQ.get_eigensystem">
+<code class="sig-name descname"><span class="pre">get_eigensystem</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_eig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#circuitq.core.CircuitQ.get_eigensystem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates eigenvectors and eigenstates of the numerical Hamiltonian.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_eig</strong> (<em>int</em>) – Number of returned eigenvalues.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>evals</strong> (<em>array</em>) – Array of eigenvalues</p></li>
+<li><p><strong>estates</strong> (<em>array</em>) – Array of eigenstates</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="circuitq.core.CircuitQ.get_numerical_hamiltonian">
+<code class="sig-name descname"><span class="pre">get_numerical_hamiltonian</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_zero</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#circuitq.core.CircuitQ.get_numerical_hamiltonian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a numerical representation of the Hamiltonian using the
+finite difference method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_dim</strong> (<em>int</em>) – Dimension of numerical matrix of each subsystem. If an even number is given,
+the value is set to the next odd number. This is done to match the
+dimension of matrices between the charge and flux basis.</p></li>
+<li><p><strong>grid_length</strong> (<em>float</em><em> (</em><em>Default 4*np.pi*phi_0</em><em>)</em>) – The coordinate grid is taken from -grid_length to +grid_length in n_dim steps</p></li>
+<li><p><strong>parameter_values</strong> (<em>list</em>) – Numerical values of system parameters (corresponds to self.h_parameters)</p></li>
+<li><p><strong>default_zero</strong> (<em>bool</em><em> (</em><em>Default True</em><em>)</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>h_num</strong> – Numeric Hamiltonian of the circuit given as a matrix in array form</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="circuitq.core.CircuitQ.get_spectrum_anharmonicity">
+<code class="sig-name descname"><span class="pre">get_spectrum_anharmonicity</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbr_check_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#circuitq.core.CircuitQ.get_spectrum_anharmonicity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the anharmonicity of the eigenspectrum. The method can handle
+degenerated eigenenergies. It considers the transition that is the closest to
+the qubit transition (groundstate-first excited states) and subsequently
+calculates the quotient between these two transitions and returns abs(1-quotient).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>nbr_check_levels</strong> (<em>int</em><em> (</em><em>Default 3</em><em>)</em>) – Number of levels that should be considered for this analysis. The
+counting includes groundstate and first excited state.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>anharmonicity</strong> – abs(1-quotient) as described above</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="circuitq.core.CircuitQ.transform_charge_to_flux">
+<code class="sig-name descname"><span class="pre">transform_charge_to_flux</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#circuitq.core.CircuitQ.transform_charge_to_flux" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms the eigenvectors into the flux basis. This is necessary to plot the
+states as a function of flux if the numerical Hamiltonian was (partially)
+implemented in the charge basis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>external parameters</strong> (<em>No</em>) – </p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>estates_in_phi_basis</strong> – An array that contains the eigenstates in the flux basis.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-circuitq.functions_file">
+<span id="circuitq-functions-file-module"></span><h2>circuitq.functions_file module<a class="headerlink" href="#module-circuitq.functions_file" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="circuitq.functions_file.visualize_circuit_general">
+<code class="sig-prename descclassname"><span class="pre">circuitq.functions_file.</span></code><code class="sig-name descname"><span class="pre">visualize_circuit_general</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">graph</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_as</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#circuitq.functions_file.visualize_circuit_general" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualises a circuit by creating a figure to an arbitrary path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>graph</strong> (<em>NetworkX Graph</em>) – Input circuit</p></li>
+<li><p><strong>save_as</strong> (<em>String</em>) – Arbitrary figure path</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="tutorial.html" class="btn btn-neutral float-left" title="Tutorial" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Philipp Aumann.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
