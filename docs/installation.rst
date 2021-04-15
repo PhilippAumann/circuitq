@@ -3,7 +3,7 @@ Installation
 
 Installation via pip
 ----------------------
-CircuitQ can be installed by using python's package manager pip:
+CircuitQ can be installed by using python's package manager ``pip``:
 
 .. code-block::
 
