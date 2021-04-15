@@ -4,7 +4,6 @@ import networkx as nx
 import circuitq.functions_file as my
 import math
 import sympy as sp
-import qutip as qt
 import numpy as np
 import scipy.sparse as spa
 import scipy.linalg as linalg
