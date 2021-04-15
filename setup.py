@@ -2,7 +2,7 @@ import os, sys
 from setuptools import setup, find_packages
 
 setup(name='circuitq',
-      version='0.1',
+      version='0.2',
       description='Automated design of superconducting qubits',
       url='https://github.com/PhilippAumann/circuitq',
       author='Philipp Aumann',
@@ -10,9 +10,7 @@ setup(name='circuitq',
       license='MIT',
       # packages=['circuitq']
       packages=find_packages(),
-      # install_requires= [
-      #     'qutip', 'numpy', 'networkx', 'sympy', 'scipy'
-      #                   ],
+      install_requires= ['numpy', 'networkx', 'sympy', 'scipy'],
       )
 
 local_package_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
