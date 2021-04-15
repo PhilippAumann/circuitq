@@ -2,4 +2,5 @@ networkx
 scipy
 numpy
 sympy
+ipykernel
 nbsphinx
