@@ -30,6 +30,8 @@ Table of contents
 
 The source code can be found on `CircuitQ's repository at GitHub <https://github.com/PhilippAumann/circuitq>`_.
 
+CircuitQ was developed by Philipp Aumann and Tim Menke under the supervision of `William Oliver <https://equs.mit.edu/>`_ and `Wolfgang Lechner <https://www.uibk.ac.at/th-physik/quantum-optimization/>`_.
+
 `Index <genindex.html>`_
 ------------------------
 

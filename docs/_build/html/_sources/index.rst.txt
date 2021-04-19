@@ -26,9 +26,11 @@ Table of contents
    api_reference.rst
 
 .. note::
-   Please refer to our preprint on arXiv for more details on physics and implementation and to cite our project.
+   Please refer to our preprint on arXiv (...include link...) for more details on physics and implementation and to cite our project.
 
 The source code can be found on `CircuitQ's repository at GitHub <https://github.com/PhilippAumann/circuitq>`_.
+
+CircuitQ was developed by Philipp Aumann and Tim Menke under the supervision of `William Oliver <https://equs.mit.edu/>`_ and `Wolfgang Lechner <https://www.uibk.ac.at/th-physik/quantum-optimization/>`_.
 
 `Index <genindex.html>`_
 ------------------------

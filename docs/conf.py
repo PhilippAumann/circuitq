@@ -20,8 +20,8 @@ import circuitq
 # -- Project information -----------------------------------------------------
 
 project = 'CircuitQ'
-copyright = '2021, Philipp Aumann'
-author = 'Philipp Aumann'
+copyright = '2021, CircuitQ Team'
+author = 'Philipp Aumann, Tim Menke, William Oliver, Wolfgang Lechner'
 
 
 # -- General configuration ---------------------------------------------------

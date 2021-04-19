@@ -8,3 +8,5 @@ Please refer to the [documentation](https://circuitq.readthedocs.io/en/latest/) 
 
 More details on physics and numerical implementation can be found on our preprint on arXiv ...include link...
 
+CircuitQ was developed by Philipp Aumann and Tim Menke under the supervision of [William Oliver](https://equs.mit.edu/) and [Wolfgang Lechner](https://www.uibk.ac.at/th-physik/quantum-optimization/).
+
