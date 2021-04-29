@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="66.802498pt"
+   version="1.1"
+   viewBox="0 0 133.146 66.8025"
+   width="133.146pt"
+   id="svg1727"
+   sodipodi:docname="lc_circuit.svg"
+   inkscape:version="1.0.1 (c497b03c, 2020-09-10)"
+   inkscape:export-filename="/Users/philipp/Dropbox (Personal)/CircuitDesign/git/docs/circuit_figures/lc_circuit.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="1"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1619"
+     inkscape:window-height="859"
+     id="namedview1729"
+     showgrid="false"
+     inkscape:zoom="2.962913"
+     inkscape:cx="34.088075"
+     inkscape:cy="44.197493"
+     inkscape:window-x="0"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg1727"
+     inkscape:document-rotation="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
+  <metadata
+     id="metadata1669">
+    <rdf:RDF>
+      <cc:Work>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:date>2021-04-29T11:50:25.823338</dc:date>
+        <dc:format>image/svg+xml</dc:format>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Matplotlib v3.3.4, https://matplotlib.org/</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs1673">
+    <style
+       type="text/css"
+       id="style1671">*{stroke-linecap:butt;stroke-linejoin:round;}</style>
+  </defs>
+  <g
+     id="figure_1">
+    <g
+       id="patch_1">
+      <path
+         d="M 0,66.8025 H 133.146 V 0 H 0 Z"
+         style="fill:none"
+         id="path1675" />
+    </g>
+    <g
+       id="axes_1">
+      <g
+         id="patch_2">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="m 58.473,16.18875 c 0,-1.014064 -0.426986,-1.987632 -1.186218,-2.704683 C 56.527551,12.767015 55.496715,12.36375 54.423,12.36375 c -1.073715,0 -2.104551,0.403265 -2.863782,1.120317 C 50.799986,14.201118 50.373,15.174686 50.373,16.18875"
+           style="fill:none;stroke:#000000;stroke-linejoin:miter"
+           id="path1678" />
+      </g>
+      <g
+         id="patch_3">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="m 66.573,16.18875 c 0,-1.014064 -0.426986,-1.987632 -1.186218,-2.704683 C 64.627551,12.767015 63.596715,12.36375 62.523,12.36375 c -1.073715,0 -2.104551,0.403265 -2.863782,1.120317 C 58.899986,14.201118 58.473,15.174686 58.473,16.18875"
+           style="fill:none;stroke:#000000;stroke-linejoin:miter"
+           id="path1681" />
+      </g>
+      <g
+         id="patch_4">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="m 74.673,16.18875 c 0,-1.014064 -0.426986,-1.987632 -1.186218,-2.704683 C 72.727551,12.767015 71.696715,12.36375 70.623,12.36375 c -1.073715,0 -2.104551,0.403265 -2.863782,1.120317 C 66.999986,14.201118 66.573,15.174686 66.573,16.18875"
+           style="fill:none;stroke:#000000;stroke-linejoin:miter"
+           id="path1684" />
+      </g>
+      <g
+         id="patch_5">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="m 82.773,16.18875 c 0,-1.014064 -0.426986,-1.987632 -1.186218,-2.704683 C 80.827551,12.767015 79.796715,12.36375 78.723,12.36375 c -1.073715,0 -2.104551,0.403265 -2.863782,1.120317 C 75.099986,14.201118 74.673,15.174686 74.673,16.18875"
+           style="fill:none;stroke:#000000;stroke-linejoin:miter"
+           id="path1687" />
+      </g>
+      <g
+         id="line2d_1">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="M 17.973,31.48875"
+           style="fill:none;stroke:#000000;stroke-linecap:round"
+           id="path1690" />
+      </g>
+      <g
+         id="line2d_2">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="m 17.973,31.48875 v -7.65 -7.65"
+           style="fill:none;stroke:#000000;stroke-linecap:round"
+           id="path1693" />
+      </g>
+      <g
+         id="line2d_3">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="m 17.973,16.18875 h 32.4 m 32.4,0 h 32.4"
+           style="fill:none;stroke:#000000;stroke-linecap:round"
+           id="path1696" />
+      </g>
+      <g
+         id="line2d_4">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="m 115.173,16.18875 v 7.65 7.65"
+           style="fill:none;stroke:#000000;stroke-linecap:round"
+           id="path1699" />
+      </g>
+      <g
+         id="line2d_5">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="M 115.173,31.48875"
+           style="fill:none;stroke:#000000;stroke-linecap:round"
+           id="path1702" />
+      </g>
+      <g
+         id="line2d_6">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="m 115.173,31.48875 v 7.65 7.65"
+           style="fill:none;stroke:#000000;stroke-linecap:round"
+           id="path1705" />
+      </g>
+      <g
+         id="line2d_7">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="M 115.173,46.78875 H 69.489 m 0,7.65 v -15.3 m -5.832,15.3 v -15.3 m 0,7.65 H 17.973"
+           style="fill:none;stroke:#000000;stroke-linecap:round"
+           id="path1708" />
+      </g>
+      <g
+         id="line2d_8">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="m 17.973,46.78875 v -7.65 -7.65"
+           style="fill:none;stroke:#000000;stroke-linecap:round"
+           id="path1711" />
+      </g>
+      <g
+         id="patch_6">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="m 17.973,33.78375 c 0.644444,0 1.262579,-0.241816 1.718269,-0.67219 0.455691,-0.430374 0.711731,-1.014169 0.711731,-1.62281 0,-0.608641 -0.25604,-1.192436 -0.711731,-1.62281 -0.45569,-0.430374 -1.073825,-0.67219 -1.718269,-0.67219 -0.644444,0 -1.262579,0.241816 -1.718269,0.67219 -0.455691,0.430374 -0.711731,1.014169 -0.711731,1.62281 0,0.608641 0.25604,1.192436 0.711731,1.62281 0.45569,0.430374 1.073825,0.67219 1.718269,0.67219 z"
+           style="stroke:#000000;stroke-linejoin:miter"
+           id="path1714" />
+      </g>
+      <g
+         id="patch_7">
+        <path
+           clip-path="url(#p2a463ace5f)"
+           d="m 115.173,33.78375 c 0.64444,0 1.26258,-0.241816 1.71827,-0.67219 0.45569,-0.430374 0.71173,-1.014169 0.71173,-1.62281 0,-0.608641 -0.25604,-1.192436 -0.71173,-1.62281 -0.45569,-0.430374 -1.07383,-0.67219 -1.71827,-0.67219 -0.64444,0 -1.26258,0.241816 -1.71827,0.67219 -0.45569,0.430374 -0.71173,1.014169 -0.71173,1.62281 0,0.608641 0.25604,1.192436 0.71173,1.62281 0.45569,0.430374 1.07383,0.67219 1.71827,0.67219 z"
+           style="stroke:#000000;stroke-linejoin:miter"
+           id="path1717" />
+      </g>
+    </g>
+  </g>
+  <defs
+     id="defs1725">
+    <clipPath
+       id="p2a463ace5f">
+      <rect
+         height="52.4025"
+         width="118.746"
+         x="7.1999998"
+         y="7.1999998"
+         id="rect1722" />
+    </clipPath>
+  </defs>
+  <text
+     xml:space="preserve"
+     style="font-size:15px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round"
+     x="3.9575703"
+     y="36.625488"
+     id="text900"><tspan
+       sodipodi:role="line"
+       id="tspan898"
+       x="3.9575703"
+       y="36.625488"
+       style="font-size:15px;stroke-width:0.75">0</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:15px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round"
+     x="118.66586"
+     y="36.442383"
+     id="text900-7"><tspan
+       sodipodi:role="line"
+       id="tspan898-3"
+       x="118.66586"
+       y="36.442383"
+       style="font-size:15px;stroke-width:0.75">1</tspan></text>
+</svg>

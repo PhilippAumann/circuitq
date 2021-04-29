@@ -23,6 +23,7 @@ Table of contents
    installation.rst
    transmon_demo.ipynb
    tutorial.ipynb
+   more_examples.rst
    api_reference.rst
 
 .. note::

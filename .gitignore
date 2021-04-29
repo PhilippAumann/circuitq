@@ -6,6 +6,8 @@ data/*
 figures/*
 debug/*
 optimization/*
+notebooks/*
+notes/*
 *.aux
 *.log
 *.out

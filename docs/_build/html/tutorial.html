@@ -42,7 +42,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API reference" href="api_reference.html" />
+    <link rel="next" title="More Examples" href="more_examples.html" />
     <link rel="prev" title="Quick Demo" href="transmon_demo.html" /> 
 </head>
 
@@ -101,9 +101,13 @@
 <li class="toctree-l2"><a class="reference internal" href="#Parameters">Parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Numerical-Hamiltonian">Numerical Hamiltonian</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Diagonalization">Diagonalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Anharmonicity">Anharmonicity</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#T1-time"><span class="math notranslate nohighlight">\(T1\)</span> time</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Parameter-sweep">Parameter sweep</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Charge-offset">Charge offset</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="more_examples.html">More Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_reference.html">API reference</a></li>
 </ul>
 
@@ -474,7 +478,9 @@ div.rendered_html tbody tr:hover {
 <h2>Create circuit graph<a class="headerlink" href="#Create-circuit-graph" title="Permalink to this headline">¶</a></h2>
 <p>A superconducting circuit can be related to a graph by relating all circuit elements between two nodes to an edge of the graph. Possible elements are capacitances (<code class="docutils literal notranslate"><span class="pre">'C'</span></code>), linear inductances (<code class="docutils literal notranslate"><span class="pre">'L'</span></code>) and Josephson junctions (<code class="docutils literal notranslate"><span class="pre">'J'</span></code>).</p>
 <p>Since multiple edges of such a graph can be in parallel we work with the <code class="docutils literal notranslate"><span class="pre">MultiGraph</span></code> class of <code class="docutils literal notranslate"><span class="pre">networkx</span></code>.</p>
-<p>Let’s consider the Fluxonium as an example. To initialize the circuit, we execute the following:</p>
+<p>Let’s consider the Fluxonium as an example, which consists of a linear inductance and a Josephson junction in parallel together with a shunted capacity.</p>
+<p><img alt="Fluxonium Circuit" class="no-scaled-link" src="_images/fluxonium_circuit.png" style="width: 200px;" /></p>
+<p>To initialize the circuit, we execute the following:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
@@ -556,13 +562,15 @@ $\displaystyle - E_{J010} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{1} \ri
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">h_num</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_numerical_hamiltonian</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span> <span class="n">parameter_values</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="n">EJ</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">phi_ext</span> <span class="p">])</span>
+<span></span><span class="n">h_num</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_numerical_hamiltonian</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span>
+                    <span class="n">parameter_values</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="n">EJ</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">phi_ext</span> <span class="p">])</span>
 </pre></div>
 </div>
 </div>
-<p>The method <code class="docutils literal notranslate"><span class="pre">get_numerical_hamiltonian()</span></code> takes the length of the matrices representing the flux and charge variables as the first parameter input. CircuitQ automatically performs the numerical implementation of the node variables either in the charge basis, in the flux basis or also in a combination of both - depending on the periodicity of the potential along the individual flux variables. In the exemplary case of the Fluxonium, the flux basis will be used due to the harmonic contribution of
-the linear inductance.</p>
-<p>To assign specific parameter values, use an input list for <code class="docutils literal notranslate"><span class="pre">paramter_values</span></code>, with the same order as the <code class="docutils literal notranslate"><span class="pre">h_parameters</span></code> list. If a values is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, a characteristic default value will be assigned to it. Optionally, the length of the numerical coordinate grid can be specified as well, see the API reference for more details.</p>
+<p>The method <code class="docutils literal notranslate"><span class="pre">get_numerical_hamiltonian()</span></code> takes the length of the matrices representing the flux and charge variables as the first parameter input (here <code class="docutils literal notranslate"><span class="pre">401</span></code>). CircuitQ automatically performs the numerical implementation of the node variables either in the charge basis, in the flux basis or also in a combination of both - depending on the periodicity of the potential along the individual flux variables. In the exemplary case of the Fluxonium, the flux basis will be used due to the harmonic
+contribution of the linear inductance. The length of the numerical flux coordinate grid can be set manually by using the keyword <code class="docutils literal notranslate"><span class="pre">grid_length</span></code>. This may have a crucial impact on the numerical results. If it is not specified (like in the example above) it is set to the default value <span class="math notranslate nohighlight">\(\Phi_{max} = 4 \pi \Phi_0\)</span>. For the cases which are implemented in the charge basis, <code class="docutils literal notranslate"><span class="pre">CircuitQ</span></code>’s method <code class="docutils literal notranslate"><span class="pre">transform_charge_to_flux()</span></code> can be used to be able to express the eigenstates still in the flux
+basis (see More Examples -&gt; Flux Qubit).</p>
+<p>To assign specific parameter values, use an input list for <code class="docutils literal notranslate"><span class="pre">paramter_values</span></code>, with the same order as the <code class="docutils literal notranslate"><span class="pre">h_parameters</span></code> list. If a value is set to <code class="docutils literal notranslate"><span class="pre">False</span></code>, a characteristic default value will be assigned to it.</p>
 <p>The numerical Hamiltonian is represented as a sparse <code class="docutils literal notranslate"><span class="pre">csr_matrix</span></code> from the <code class="docutils literal notranslate"><span class="pre">SciPy</span></code> package.</p>
 </section>
 <section id="Diagonalization">
@@ -583,16 +591,20 @@ the linear inductance.</p>
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">))</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">flux_list</span><span class="p">,</span> <span class="n">circuit</span><span class="o">.</span><span class="n">potential</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<span></span><span class="n">h</span> <span class="o">=</span> <span class="mf">6.62607015e-34</span>
+<span class="n">y_scaling</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span><span class="mf">1e9</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">flux_list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">potential</span><span class="p">)</span><span class="o">*</span><span class="n">y_scaling</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">flux_list</span><span class="p">,</span>
-             <span class="n">eigv</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">eigs</span><span class="p">[:,</span><span class="n">n</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="mf">2e-23</span>
+             <span class="p">(</span><span class="n">eigv</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">eigs</span><span class="p">[:,</span><span class="n">n</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="mf">2e-23</span><span class="p">)</span><span class="o">*</span><span class="n">y_scaling</span>
              <span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Eigenstate &quot;</span> <span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\Phi$&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Energy&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mf">1e-24</span><span class="p">,</span> <span class="mf">6e-24</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\Phi_1 / \Phi_0$&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Energy in GHz$\cdot$h&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span> <span class="p">,</span>
+           <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$-2\pi$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$-\pi$&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$0$&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$\pi$&#39;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">2.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span><span class="p">,</span> <span class="mf">1.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -604,7 +616,11 @@ the linear inductance.</p>
 <img alt="_images/tutorial_22_0.png" src="_images/tutorial_22_0.png" />
 </div>
 </div>
-<p>To operate the circuit as a qubit, a certain degree of the spectrum’s anharmonicity is desired. CircuitQ provides a measure for this purpose:</p>
+<p>To plot the potential, the <code class="docutils literal notranslate"><span class="pre">potential</span></code> attribute of a <code class="docutils literal notranslate"><span class="pre">CircuitQ</span></code> instance can be used if the problem is 1-dimensional and formulated in flux basis.</p>
+</section>
+<section id="Anharmonicity">
+<h2>Anharmonicity<a class="headerlink" href="#Anharmonicity" title="Permalink to this headline">¶</a></h2>
+<p>To operate the circuit as a qubit, a certain degree of the spectrum’s anharmonicity is desired. CircuitQ provides a measure for this purpose, which can be given by <code class="docutils literal notranslate"><span class="pre">get_spectrum_anharmonicity()</span></code>. The method considers the transition that is the closest to the qubit transition and subsequently calculates the quotient between these two transitions and returns abs(1-quotient). A cutoff has been implemented, such that the returned anharmonicity is within <span class="math notranslate nohighlight">\([0,1]\)</span>.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
@@ -701,6 +717,172 @@ Flux noise contribution T1 = 1.895929e-02 s
 Total T1 = 2.026503e-05 s
 </pre></div></div>
 </div>
+<p>Please refer to our preprint for more details on how the noise contributions are calculated.</p>
+</section>
+<section id="Parameter-sweep">
+<h2>Parameter sweep<a class="headerlink" href="#Parameter-sweep" title="Permalink to this headline">¶</a></h2>
+<p>The dependence of circuit properties on the value of one or more parameters is a crucial aspect to consider when analysing superconducting circuits.</p>
+<p>The exemplary spectrum above depends on the value of the external flux <span class="math notranslate nohighlight">\(\tilde{\Phi}_{010}\)</span>. For the previous plot, we have chosen the external flux to be <span class="math notranslate nohighlight">\(\pi \cdot \Phi_0\)</span>. If we set this value to <span class="math notranslate nohighlight">\(0\)</span>, the spectrum has the following form:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">phi_ext</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="n">circuit</span><span class="o">.</span><span class="n">get_numerical_hamiltonian</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span> <span class="n">parameter_values</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="n">EJ</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">phi_ext</span> <span class="p">])</span>
+<span class="n">eigv</span><span class="p">,</span> <span class="n">eigs</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_eigensystem</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">flux_list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">potential</span><span class="p">)</span><span class="o">*</span><span class="n">y_scaling</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">flux_list</span><span class="p">,</span>
+             <span class="p">(</span><span class="n">eigv</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">eigs</span><span class="p">[:,</span><span class="n">n</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span><span class="o">*</span><span class="mf">2e-23</span><span class="p">)</span><span class="o">*</span><span class="n">y_scaling</span>
+             <span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">&quot;Eigenstate &quot;</span> <span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\Phi_1 / \Phi_0$&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Energy in GHz$\cdot$h&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span> <span class="p">,</span>
+           <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$-2\pi$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$-\pi$&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$0$&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$\pi$&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$2\pi$&#39;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="o">-</span><span class="mf">2.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span><span class="p">,</span> <span class="mf">2.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/tutorial_35_0.png" src="_images/tutorial_35_0.png" />
+</div>
+</div>
+<p>The harmonicity of the spectrum increased due to the change of the external flux. This fact will also be reflected when calculating the anahrmonicity.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">circuit</span><span class="o">.</span><span class="n">get_spectrum_anharmonicity</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+0.05288147513284358
+</pre></div></div>
+</div>
+<p>We can further study the dependence of the lowest eigenenergies as a function of the external flux.</p>
+<p>Let’s start by calculating the eigenvalues for differnt values of the external flux. Note that the order of the <code class="docutils literal notranslate"><span class="pre">paramter_values</span></code> list stays the same.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">eigenvalues</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">phi_ext_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span><span class="p">,</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span><span class="p">,</span><span class="mi">100</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">phi_ext</span> <span class="ow">in</span> <span class="n">phi_ext_list</span><span class="p">:</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">get_numerical_hamiltonian</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span> <span class="n">parameter_values</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="n">EJ</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">phi_ext</span><span class="p">])</span>
+    <span class="n">eigv</span><span class="p">,</span> <span class="n">eigs</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_eigensystem</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">eigenvalues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eigv</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Finally, we can plot the parameter sweep.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">phi_ext_list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">)</span><span class="o">*</span><span class="n">y_scaling</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;External Flux $ \tilde{\Phi}_</span><span class="si">{010}</span><span class="s2"> / \Phi_0$&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Energy in GHz$\cdot$h&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span> <span class="p">,</span>
+           <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$-2\pi$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$-\pi$&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$0$&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$\pi$&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$2\pi$&#39;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/tutorial_41_0.png" src="_images/tutorial_41_0.png" />
+</div>
+</div>
+<p>We are not restricted in analyzing only the impact of the external flux, as this variation can be done for any parameter in <code class="docutils literal notranslate"><span class="pre">paramter_values</span></code>.</p>
+</section>
+<section id="Charge-offset">
+<h2>Charge offset<a class="headerlink" href="#Charge-offset" title="Permalink to this headline">¶</a></h2>
+<p>The offset of a node charge can be tuned by an external source. To work with charge offsets, the corresponding nodes have to be specified when initializing a <code class="docutils literal notranslate"><span class="pre">CircuitQ</span></code> instance. As a demonstration let’s choose node 1 to have a charge offset.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">circuit</span> <span class="o">=</span> <span class="n">cq</span><span class="o">.</span><span class="n">CircuitQ</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">offset_nodes</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">circuit</span><span class="o">.</span><span class="n">h</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="math notranslate nohighlight">
+$\displaystyle - E_{J010} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{1} \right)} + \frac{\left(\Phi_{1} + \tilde{\Phi}_{010}\right)^{2}}{2 L_{010}} + \frac{0.5 \left(q_{1} + qo_{1}\right)^{2}}{C_{01}}$</div></div>
+</div>
+<p>The node charge <span class="math notranslate nohighlight">\(q_1\)</span> is now shifted by an offset charge <span class="math notranslate nohighlight">\(qo_1\)</span>. This new variable now also appears in in the parameter list:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">circuit</span><span class="o">.</span><span class="n">h_parameters</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[C_{01}, E_{J010}, L_{010}, \tilde{\Phi}_{010}, qo_{1}]
+</pre></div></div>
+</div>
+<p>Finally, we can also study the impact of the external charge on the spectrum of the exemplary circuit.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">eigenvalues</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">phi_ext</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span>
+<span class="n">q_off_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">e</span><span class="p">,</span><span class="mi">10</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">e</span><span class="p">,</span><span class="mi">30</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">q_off</span> <span class="ow">in</span> <span class="n">q_off_list</span><span class="p">:</span>
+    <span class="n">circuit</span><span class="o">.</span><span class="n">get_numerical_hamiltonian</span><span class="p">(</span><span class="mi">401</span><span class="p">,</span> <span class="n">parameter_values</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="n">EJ</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">phi_ext</span><span class="p">,</span> <span class="n">q_off</span><span class="p">])</span>
+    <span class="n">eigv</span><span class="p">,</span> <span class="n">eigs</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_eigensystem</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">eigenvalues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eigv</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">q_off_list</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">e</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">)</span><span class="o">*</span><span class="n">y_scaling</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Charge offset $ qo_1 / (2e)$&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Energy in GHz$\cdot$h&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/tutorial_48_0.png" src="_images/tutorial_48_0.png" />
+</div>
+</div>
 </section>
 </section>
 
@@ -710,7 +892,7 @@ Total T1 = 2.026503e-05 s
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="api_reference.html" class="btn btn-neutral float-right" title="API reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="more_examples.html" class="btn btn-neutral float-right" title="More Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="transmon_demo.html" class="btn btn-neutral float-left" title="Quick Demo" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

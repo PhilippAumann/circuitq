@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   height="157.203pt"
+   version="1.1"
+   viewBox="0 0 185.895 157.203"
+   width="185.895pt"
+   id="svg1030"
+   sodipodi:docname="fluxqubit_circuit.svg"
+   inkscape:version="1.0.1 (c497b03c, 2020-09-10)"
+   inkscape:export-filename="/Users/philipp/Dropbox (Personal)/CircuitDesign/git/docs/circuit_figures/fluxqubit_circuit.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300">
+  <metadata
+     id="metadata1034">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="1"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1554"
+     inkscape:window-height="882"
+     id="namedview1032"
+     showgrid="false"
+     inkscape:zoom="2.1221657"
+     inkscape:cx="12.251637"
+     inkscape:cy="158.75632"
+     inkscape:window-x="0"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg1030"
+     inkscape:document-rotation="0" />
+  <defs
+     id="defs940">
+    <style
+       type="text/css"
+       id="style938">
+*{stroke-linecap:butt;stroke-linejoin:round;}
+  </style>
+  </defs>
+  <g
+     id="figure_1">
+    <g
+       id="patch_1">
+      <path
+         d="M 0 157.203  L 185.895 157.203  L 185.895 0  L 0 0  z "
+         style="fill:none;"
+         id="path942" />
+    </g>
+    <g
+       id="axes_1">
+      <g
+         id="line2d_1">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 42.9975 40.9365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path945" />
+      </g>
+      <g
+         id="line2d_2">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 42.9975 40.9365  L 51.3225 40.9365  L 59.6475 40.9365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path948" />
+      </g>
+      <g
+         id="line2d_3">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 59.6475 40.9365  L 92.9475 40.9365  M 84.6225 32.8365  L 101.2725 49.0365  M 101.2725 32.8365  L 84.6225 49.0365  M 92.9475 40.9365  L 126.2475 40.9365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path951" />
+      </g>
+      <g
+         id="line2d_4">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 59.6475 40.9365  L 59.6475 32.8365  L 59.6475 24.7365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path954" />
+      </g>
+      <g
+         id="line2d_5">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 59.6475 24.7365  L 89.9505 24.7365  M 89.9505 16.6365  L 89.9505 32.8365  M 95.9445 16.6365  L 95.9445 32.8365  M 95.9445 24.7365  L 126.2475 24.7365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path957" />
+      </g>
+      <g
+         id="line2d_6">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 126.2475 24.7365  L 126.2475 32.8365  L 126.2475 40.9365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path960" />
+      </g>
+      <g
+         id="line2d_7">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 126.2475 40.9365  L 134.5725 40.9365  L 142.8975 40.9365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path963" />
+      </g>
+      <g
+         id="line2d_8">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 142.8975 40.9365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path966" />
+      </g>
+      <g
+         id="line2d_9">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 142.8975 40.9365  L 142.8975 49.0365  L 142.8975 57.1365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path969" />
+      </g>
+      <g
+         id="line2d_10">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 142.8975 57.1365  L 142.8975 89.5365  M 151.2225 81.4365  L 134.5725 97.6365  M 151.2225 97.6365  L 134.5725 81.4365  M 142.8975 89.5365  L 142.8975 121.9365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path972" />
+      </g>
+      <g
+         id="line2d_11">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 142.8975 57.1365  L 151.2225 57.1365  L 159.5475 57.1365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path975" />
+      </g>
+      <g
+         id="line2d_12">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 159.5475 57.1365  L 159.5475 86.6205  M 167.8725 86.6205  L 151.2225 86.6205  M 167.8725 92.4525  L 151.2225 92.4525  M 159.5475 92.4525  L 159.5475 121.9365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path978" />
+      </g>
+      <g
+         id="line2d_13">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 159.5475 121.9365  L 151.2225 121.9365  L 142.8975 121.9365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path981" />
+      </g>
+      <g
+         id="line2d_14">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 142.8975 121.9365  L 142.8975 130.0365  L 142.8975 138.1365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path984" />
+      </g>
+      <g
+         id="line2d_15">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 142.8975 138.1365  L 117.9225 138.1365  L 92.9475 138.1365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path987" />
+      </g>
+      <g
+         id="line2d_16">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 92.9475 138.1365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path990" />
+      </g>
+      <g
+         id="line2d_17">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 92.9475 138.1365  L 67.9725 138.1365  L 42.9975 138.1365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path993" />
+      </g>
+      <g
+         id="line2d_18">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 42.9975 138.1365  L 42.9975 130.0365  L 42.9975 121.9365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path996" />
+      </g>
+      <g
+         id="line2d_19">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 42.9975 121.9365  L 42.9975 89.5365  M 34.6725 97.6365  L 51.3225 81.4365  M 34.6725 81.4365  L 51.3225 97.6365  M 42.9975 89.5365  L 42.9975 57.1365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path999" />
+      </g>
+      <g
+         id="line2d_20">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 42.9975 121.9365  L 34.6725 121.9365  L 26.3475 121.9365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path1002" />
+      </g>
+      <g
+         id="line2d_21">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 26.3475 121.9365  L 26.3475 92.4525  M 18.0225 92.4525  L 34.6725 92.4525  M 18.0225 86.6205  L 34.6725 86.6205  M 26.3475 86.6205  L 26.3475 57.1365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path1005" />
+      </g>
+      <g
+         id="line2d_22">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 26.3475 57.1365  L 34.6725 57.1365  L 42.9975 57.1365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path1008" />
+      </g>
+      <g
+         id="line2d_23">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 42.9975 57.1365  L 42.9975 49.0365  L 42.9975 40.9365  "
+           style="fill:none;stroke:#000000;stroke-linecap:round;"
+           id="path1011" />
+      </g>
+      <g
+         id="patch_2">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 42.9975 43.3665  C 43.659845 43.3665 44.295151 43.11046 44.763499 42.654769  C 45.231848 42.199079 45.495 41.580944 45.495 40.9365  C 45.495 40.292056 45.231848 39.673921 44.763499 39.218231  C 44.295151 38.76254 43.659845 38.5065 42.9975 38.5065  C 42.335155 38.5065 41.699849 38.76254 41.231501 39.218231  C 40.763152 39.673921 40.5 40.292056 40.5 40.9365  C 40.5 41.580944 40.763152 42.199079 41.231501 42.654769  C 41.699849 43.11046 42.335155 43.3665 42.9975 43.3665  z "
+           style="stroke:#000000;stroke-linejoin:miter;"
+           id="path1014" />
+      </g>
+      <g
+         id="patch_3">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 142.8975 43.3665  C 143.559845 43.3665 144.195151 43.11046 144.663499 42.654769  C 145.131848 42.199079 145.395 41.580944 145.395 40.9365  C 145.395 40.292056 145.131848 39.673921 144.663499 39.218231  C 144.195151 38.76254 143.559845 38.5065 142.8975 38.5065  C 142.235155 38.5065 141.599849 38.76254 141.131501 39.218231  C 140.663152 39.673921 140.4 40.292056 140.4 40.9365  C 140.4 41.580944 140.663152 42.199079 141.131501 42.654769  C 141.599849 43.11046 142.235155 43.3665 142.8975 43.3665  z "
+           style="stroke:#000000;stroke-linejoin:miter;"
+           id="path1017" />
+      </g>
+      <g
+         id="patch_4">
+        <path
+           clip-path="url(#p4f5bdb55b5)"
+           d="M 92.9475 140.5665  C 93.609845 140.5665 94.245151 140.31046 94.713499 139.854769  C 95.181848 139.399079 95.445 138.780944 95.445 138.1365  C 95.445 137.492056 95.181848 136.873921 94.713499 136.418231  C 94.245151 135.96254 93.609845 135.7065 92.9475 135.7065  C 92.285155 135.7065 91.649849 135.96254 91.181501 136.418231  C 90.713152 136.873921 90.45 137.492056 90.45 138.1365  C 90.45 138.780944 90.713152 139.399079 91.181501 139.854769  C 91.649849 140.31046 92.285155 140.5665 92.9475 140.5665  z "
+           style="stroke:#000000;stroke-linejoin:miter;"
+           id="path1020" />
+      </g>
+    </g>
+  </g>
+  <defs
+     id="defs1028">
+    <clipPath
+       id="p4f5bdb55b5">
+      <rect
+         height="142.803"
+         width="171.495"
+         x="7.2"
+         y="7.2"
+         id="rect1025" />
+    </clipPath>
+  </defs>
+  <text
+     xml:space="preserve"
+     style="font-size:15px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round"
+     x="88.172112"
+     y="154.0592"
+     id="text900"><tspan
+       sodipodi:role="line"
+       id="tspan898"
+       x="88.172112"
+       y="154.0592"
+       style="font-size:15px;stroke-width:0.75">0</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:15px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round"
+     x="29.511871"
+     y="46.192383"
+     id="text900-6"><tspan
+       sodipodi:role="line"
+       id="tspan898-5"
+       x="29.511871"
+       y="46.192383"
+       style="font-size:15px;stroke-width:0.75">1</tspan></text>
+  <text
+     xml:space="preserve"
+     style="font-size:15px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;stroke-width:0.75;stroke-linecap:butt;stroke-linejoin:round"
+     x="146.94804"
+     y="46.382812"
+     id="text900-6-6"><tspan
+       sodipodi:role="line"
+       id="tspan898-5-7"
+       x="146.94804"
+       y="46.382812"
+       style="font-size:15px;stroke-width:0.75">2</tspan></text>
+</svg>
