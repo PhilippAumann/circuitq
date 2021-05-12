@@ -14,6 +14,9 @@ To get started, have a look at the `installation instructions <installation.html
 
 A more comprehensive description of CircuitQ's functionalities can be found in the `tutorial <tutorial.html>`_.
 
+For further illustrations of the toolbox, please see the `more examples <more_examples.html>`_ section.
+The `API reference <api_reference.html>`_ provides an overlook over the range of functions and is constructed based on the docstrings.
+
 
 Table of contents
 -----------------

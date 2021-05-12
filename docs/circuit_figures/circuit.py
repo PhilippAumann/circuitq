@@ -3,16 +3,42 @@ import SchemDraw.elements as e
 
 d = schem.Drawing(lw=1)
 
+# Transmon coupled to resonator
+circuit = 'transmon_c_resonator'
+d.add(e.DOT)
+d.add(e.LINE, l = 0.5, d='left')
+d.add(e.JJ, l = 3, d='up')
+d.add(e.LINE, l = 0.5, d='right')
+d.add(e.DOT)
+d.push()
+d.add(e.LINE, l = 0.5, d='right')
+d.add(e.CAP, l = 3, d='down')
+d.add(e.LINE, l = 0.5, d='left')
+d.pop()
+d.add(e.LINE, l = 0.5, d='up')
+# d.add(e.LINE, l = 0.5, d='right')
+d.add(e.CAP, l = 3, d='right')
+# d.add(e.LINE, l = 0.5, d='right')
+d.add(e.LINE, l = 0.5, d='down')
+d.add(e.DOT)
+d.add(e.LINE, l = 0.5, d='right')
+d.add(e.CAP, l = 3, d='down')
+d.add(e.LINE, l = 0.5, d='left')
+d.add(e.DOT)
+d.add(e.LINE, l = 0.5, d='left')
+d.add(e.INDUCTOR, l = 3, d='up')
+d.add(e.LINE, l = 0.5, d='right')
+
 # LC
-circuit = 'lc'
-d.add(e.DOT)
-d.add(e.LINE, l = 0.5, d='up')
-d.add(e.INDUCTOR, l = 3, d='right')
-d.add(e.LINE, l = 0.5, d='down')
-d.add(e.DOT)
-d.add(e.LINE, l = 0.5, d='down')
-d.add(e.CAP, l = 3, d='left')
-d.add(e.LINE, l = 0.5, d='up')
+# circuit = 'lc'
+# d.add(e.DOT)
+# d.add(e.LINE, l = 0.5, d='up')
+# d.add(e.INDUCTOR, l = 3, d='right')
+# d.add(e.LINE, l = 0.5, d='down')
+# d.add(e.DOT)
+# d.add(e.LINE, l = 0.5, d='down')
+# d.add(e.CAP, l = 3, d='left')
+# d.add(e.LINE, l = 0.5, d='up')
 
 
 # Transmon

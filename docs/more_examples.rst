@@ -11,3 +11,4 @@ in the `demonstration <transmon_demo.html>`_ or `tutorial <tutorial.html>`_ sect
 
    lc_circuit.ipynb
    fluxqubit.ipynb
+   transmon_c_resonator.ipynb

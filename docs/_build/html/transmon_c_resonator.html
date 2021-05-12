@@ -8,7 +8,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Flux Qubit &mdash; CircuitQ  documentation</title>
+  <title>Transmon coupled to a resonator &mdash; CircuitQ  documentation</title>
   
 
   
@@ -42,8 +42,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Transmon coupled to a resonator" href="transmon_c_resonator.html" />
-    <link rel="prev" title="LC Circuit" href="lc_circuit.html" /> 
+    <link rel="next" title="API reference" href="api_reference.html" />
+    <link rel="prev" title="Flux Qubit" href="fluxqubit.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,13 +97,13 @@
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="more_examples.html">More Examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="lc_circuit.html">LC Circuit</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Flux Qubit</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fluxqubit.html">Flux Qubit</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Transmon coupled to a resonator</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#Circuit-Graph">Circuit Graph</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Symbolic-Hamiltonian">Symbolic Hamiltonian</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#Diagonalization">Diagonalization</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="transmon_c_resonator.html">Transmon coupled to a resonator</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="api_reference.html">API reference</a></li>
@@ -157,13 +157,13 @@
         
           <li><a href="more_examples.html">More Examples</a> &raquo;</li>
         
-      <li>Flux Qubit</li>
+      <li>Transmon coupled to a resonator</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="_sources/fluxqubit.ipynb.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/transmon_c_resonator.ipynb.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -446,9 +446,10 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<section id="Flux-Qubit">
-<h1>Flux Qubit<a class="headerlink" href="#Flux-Qubit" title="Permalink to this headline">¶</a></h1>
-<p>The flux qubit complements the previous circuits, which have been discussed in this documentation, as another important example since it represents a 3-node circuit. One of the nodes will be declared as a ground node which leads effectively to a 2-dimensional problem that will be discussed here.</p>
+<section id="Transmon-coupled-to-a-resonator">
+<h1>Transmon coupled to a resonator<a class="headerlink" href="#Transmon-coupled-to-a-resonator" title="Permalink to this headline">¶</a></h1>
+<p>This example is fundamentally different to the other circuits discussed in this documentation in two ways. First, it does not describe a single system or qubit, but the coupling of a qubit (here: transmon) with another system (here: resonator). With its current implementation design, CircuitQ treads the entire circuit as a single system and provides the description of the whole system with one Hamiltonian. Second, the numerical implementation of this circuit will be provided by a mixture of the
+charge and flux basis, as the copuling capacity seperates the resonator as a harmonic system implemented in the flux basis from the transmon, which is implemented in the charge basis.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
@@ -463,7 +464,8 @@ div.rendered_html tbody tr:hover {
 </div>
 <section id="Circuit-Graph">
 <h2>Circuit Graph<a class="headerlink" href="#Circuit-Graph" title="Permalink to this headline">¶</a></h2>
-<p><img alt="Fluxqubit Circuit" class="no-scaled-link" src="_images/fluxqubit_circuit.png" style="width: 250px;" /></p>
+<p>We initialize a transmon coupled to a resonator (LC circuit) via a capacity.</p>
+<p><img alt="Transmon coupled to resonator" class="no-scaled-link" src="_images/transmon_c_resonator_circuit.png" style="width: 250px;" /></p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
@@ -473,33 +475,23 @@ div.rendered_html tbody tr:hover {
 <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="n">element</span> <span class="o">=</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span>
 <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span> <span class="n">element</span> <span class="o">=</span> <span class="s1">&#39;J&#39;</span><span class="p">)</span>
 <span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">element</span> <span class="o">=</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span>
-<span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">element</span> <span class="o">=</span> <span class="s1">&#39;J&#39;</span><span class="p">)</span>
-<span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">element</span> <span class="o">=</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span>
-<span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">element</span> <span class="o">=</span> <span class="s1">&#39;J&#39;</span><span class="p">);</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">element</span> <span class="o">=</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">element</span> <span class="o">=</span> <span class="s1">&#39;L&#39;</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
 </section>
 <section id="Symbolic-Hamiltonian">
 <h2>Symbolic Hamiltonian<a class="headerlink" href="#Symbolic-Hamiltonian" title="Permalink to this headline">¶</a></h2>
-<div class="nbinput docutils container">
+<p>We will set node 0 and 3 to the ground.</p>
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">circuit</span> <span class="o">=</span> <span class="n">cq</span><span class="o">.</span><span class="n">CircuitQ</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
-<span class="n">circuit</span><span class="o">.</span><span class="n">h_parameters</span>
+<span></span><span class="n">circuit</span> <span class="o">=</span> <span class="n">cq</span><span class="o">.</span><span class="n">CircuitQ</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">ground_nodes</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-[C_{01}, C_{02}, C_{12}, E_{J010}, E_{J020}, E_{J120}, \tilde{\Phi}_{120}]
-</pre></div></div>
 </div>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
@@ -516,63 +508,58 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="math notranslate nohighlight">
-$\displaystyle - E_{J010} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{1} \right)} - E_{J020} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{2} \right)} - E_{J120} \cos{\left(- 3.03853489761902 \cdot 10^{15} \Phi_{1} + 3.03853489761902 \cdot 10^{15} \Phi_{2} + 3.03853489761902 \cdot 10^{15} \tilde{\Phi}_{120} \right)} + 0.5 q_{1} \left(\frac{C_{12} q_{2}}{C_{01} C_{02} + C_{01} C_{12} + C_{02} C_{12}} + \frac{q_{1} \left(C_{02} + C_{12}\right)}{C_{01} C_{02} + C_{01} C_{12} + C_{02} C_{12}}\right) + 0.5 q_{2} \left(\frac{C_{12} q_{1}}{C_{01} C_{02} + C_{01} C_{12} + C_{02} C_{12}} + \frac{q_{2} \left(C_{01} + C_{12}\right)}{C_{01} C_{02} + C_{01} C_{12} + C_{02} C_{12}}\right)$</div></div>
+$\displaystyle - E_{J010} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{1} \right)} + 0.5 q_{1} \left(\frac{C_{12} q_{2}}{C_{01} C_{12} + C_{01} C_{23} + C_{12} C_{23}} + \frac{q_{1} \left(C_{12} + C_{23}\right)}{C_{01} C_{12} + C_{01} C_{23} + C_{12} C_{23}}\right) + 0.5 q_{2} \left(\frac{C_{12} q_{1}}{C_{01} C_{12} + C_{01} C_{23} + C_{12} C_{23}} + \frac{q_{2} \left(C_{01} + C_{12}\right)}{C_{01} C_{12} + C_{01} C_{23} + C_{12} C_{23}}\right) + \frac{\Phi_{2}^{2}}{2 L_{230}}$</div></div>
 </div>
 <p>(horizontally scroll the above LaTeX output)</p>
-</section>
-<section id="Diagonalization">
-<h2>Diagonalization<a class="headerlink" href="#Diagonalization" title="Permalink to this headline">¶</a></h2>
-<p>Here, we will choose two junctions to have the same Josephson energy and the same shunted capacity. The third junction is scaled by <code class="docutils literal notranslate"><span class="pre">alpha</span></code>, which we choose to be <span class="math notranslate nohighlight">\(0.7\)</span>. The parameter <code class="docutils literal notranslate"><span class="pre">dim</span></code> refers to the dimension for one node which leads to a total matrix dimension of <code class="docutils literal notranslate"><span class="pre">dim</span></code> $ ^2$.</p>
-<div class="nbinput nblast docutils container">
+<p>The Hamiltonian contains a periodic cosine potential caused by the transmon an the harmonic part of the resonator. The nodes associated with the transmon will be implemented in the charge basis, which is also reflected in the value of <code class="docutils literal notranslate"><span class="pre">charge_basis_nodes</span></code>:</p>
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">dim</span> <span class="o">=</span> <span class="mi">50</span>
-<span class="n">EJ</span> <span class="o">=</span> <span class="mi">1</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">c_v</span><span class="p">[</span><span class="s2">&quot;E&quot;</span><span class="p">]</span>
-<span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.7</span>
-<span class="n">C</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">c_v</span><span class="p">[</span><span class="s2">&quot;C&quot;</span><span class="p">]</span>
-<span class="n">phi_ext</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span>
-<span class="n">h_num</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_numerical_hamiltonian</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span>
-                    <span class="n">parameter_values</span><span class="o">=</span><span class="p">[</span><span class="n">C</span><span class="p">,</span><span class="n">C</span><span class="p">,</span><span class="n">alpha</span><span class="o">*</span><span class="n">C</span><span class="p">,</span><span class="n">EJ</span><span class="p">,</span><span class="n">EJ</span><span class="p">,</span><span class="n">alpha</span><span class="o">*</span><span class="n">EJ</span><span class="p">,</span><span class="n">phi_ext</span><span class="p">])</span>
-<span class="n">eigv</span><span class="p">,</span> <span class="n">eigs</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_eigensystem</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<p>Let’s plot the lowest eigenenergies.</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">h</span> <span class="o">=</span> <span class="mf">6.62607015e-34</span>
-<span class="n">y_scaling</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span><span class="mf">1e9</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">eigv</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span><span class="o">*</span><span class="n">y_scaling</span><span class="p">,</span> <span class="s1">&#39;ro&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Eigenvalue No.&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Energy in GHz$\cdot$h&quot;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span></span><span class="n">circuit</span><span class="o">.</span><span class="n">charge_basis_nodes</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
 </div>
 <div class="output_area docutils container">
-<img alt="_images/fluxqubit_11_0.png" src="_images/fluxqubit_11_0.png" />
+<div class="highlight"><pre>
+[0, 1]
+</pre></div></div>
+</div>
+<p>To prevent the usage of the charge basis, you can specify the list of nodes for which a flux basis implementation should be forced with the keyword <code class="docutils literal notranslate"><span class="pre">force_flux_nodes</span></code> when initialising a <code class="docutils literal notranslate"><span class="pre">CircuitQ</span></code> instance.</p>
+</section>
+<section id="Diagonalization">
+<h2>Diagonalization<a class="headerlink" href="#Diagonalization" title="Permalink to this headline">¶</a></h2>
+<p>The calculation of eigenstates and eigenvalues of the Hamiltonian is done in the mixed basis. To be able to plot the eigenstates in the flux basis, we use the method <code class="docutils literal notranslate"><span class="pre">transform_charge_to_flux()</span></code> and subsequently address the eigensates stored in <code class="docutils literal notranslate"><span class="pre">estates_in_phi_basis</span></code>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">dim</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">h_num</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_numerical_hamiltonian</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">eigv</span><span class="p">,</span> <span class="n">eigs</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">get_eigensystem</span><span class="p">()</span>
+<span class="n">circuit</span><span class="o">.</span><span class="n">transform_charge_to_flux</span><span class="p">()</span>
+<span class="n">eigs</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">estates_in_phi_basis</span>
+</pre></div>
 </div>
 </div>
-<p>The potential of the flux qubit is made up of three cosine terms. This leads to a egg carton shaped potential. As we didn’t specify the grid length above, the flux coordinate grid is set to the default interval <span class="math notranslate nohighlight">\([-4\pi\Phi_0,4\pi\Phi_0 ]\)</span>. This will repeat the maximum 4 by 4 times. Let’s plot the potential.</p>
+<p>Let’s plot the potential, which is an overlay of the cosine potential in one direction and a parabola in the other direction.</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">def</span> <span class="nf">potential</span><span class="p">(</span><span class="n">phi_1</span><span class="p">,</span> <span class="n">phi_2</span><span class="p">,</span> <span class="n">phi_ex</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="n">EJ</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi_1</span><span class="o">/</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span><span class="p">)</span> <span class="o">-</span> <span class="n">EJ</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi_2</span><span class="o">/</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span><span class="p">)</span> <span class="o">-</span>
-             <span class="n">alpha</span><span class="o">*</span><span class="n">EJ</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">((</span><span class="n">phi_2</span><span class="o">-</span><span class="n">phi_1</span><span class="o">+</span><span class="n">phi_ex</span><span class="p">)</span><span class="o">/</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span><span class="p">)</span> <span class="p">)</span>
+<span></span><span class="k">def</span> <span class="nf">potential</span><span class="p">(</span><span class="n">phi_1</span><span class="p">,</span> <span class="n">phi_2</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="n">circuit</span><span class="o">.</span><span class="n">c_v</span><span class="p">[</span><span class="s1">&#39;E&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi_1</span><span class="o">/</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span><span class="p">)</span> <span class="o">+</span> <span class="n">phi_2</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">c_v</span><span class="p">[</span><span class="s1">&#39;L&#39;</span><span class="p">]))</span>
 <span class="n">phis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span><span class="p">,</span> <span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
-<span class="n">potential_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">potential</span><span class="p">(</span><span class="n">phi_1</span><span class="p">,</span><span class="n">phi_2</span><span class="p">,</span><span class="n">phi_ext</span><span class="p">)</span><span class="o">*</span><span class="n">y_scaling</span>
-                  <span class="k">for</span> <span class="n">phi_2</span> <span class="ow">in</span> <span class="n">phis</span> <span class="k">for</span> <span class="n">phi_1</span> <span class="ow">in</span> <span class="n">phis</span><span class="p">]</span>
+<span class="n">h</span> <span class="o">=</span> <span class="mf">6.62607015e-34</span>
+<span class="n">y_scaling</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span><span class="mf">1e9</span><span class="p">)</span>
+<span class="n">potential_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">potential</span><span class="p">(</span><span class="n">phi_1</span><span class="p">,</span><span class="n">phi_2</span><span class="p">)</span><span class="o">*</span><span class="n">y_scaling</span> <span class="k">for</span> <span class="n">phi_2</span> <span class="ow">in</span> <span class="n">phis</span> <span class="k">for</span> <span class="n">phi_1</span> <span class="ow">in</span> <span class="n">phis</span><span class="p">]</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">phis</span><span class="p">,</span> <span class="n">phis</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">potential_list</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span><span class="n">dim</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span> <span class="p">,</span>
            <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$-4\pi$&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$-2\pi$&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$0$&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$2\pi$&#39;</span><span class="p">,</span><span class="sa">r</span><span class="s1">&#39;$4\pi$&#39;</span><span class="p">])</span>
@@ -589,23 +576,12 @@ $\displaystyle - E_{J010} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{1} \ri
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/fluxqubit_13_0.png" src="_images/fluxqubit_13_0.png" />
+<img alt="_images/transmon_c_resonator_13_0.png" src="_images/transmon_c_resonator_13_0.png" />
 </div>
 </div>
-<p>Due to the periodicity of the potential, CircuitQ implements the Hamiltonian in the charge basis. To be able to plot the eigenstates as a function of flux, we use the transformation method <code class="docutils literal notranslate"><span class="pre">transform_charge_to_flux()</span></code>.</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">circuit</span><span class="o">.</span><span class="n">transform_charge_to_flux</span><span class="p">()</span>
-<span class="n">eigs</span> <span class="o">=</span> <span class="n">circuit</span><span class="o">.</span><span class="n">estates_in_phi_basis</span>
-</pre></div>
-</div>
-</div>
-<p>Now, we are able to plot the square of the absolute value of the lowest eigenstates as a function of flux.</p>
+<p>Finally, we plot the lowest eigenstates depicted in the flux basis.</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -613,7 +589,7 @@ $\displaystyle - E_{J010} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{1} \ri
 <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">flux_list</span><span class="p">,</span> <span class="n">circuit</span><span class="o">.</span><span class="n">flux_list</span><span class="p">,</span>
-      <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">eigs</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">n_dim</span><span class="p">,</span><span class="n">circuit</span><span class="o">.</span><span class="n">n_dim</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">eigs</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">circuit</span><span class="o">.</span><span class="n">n_dim</span><span class="p">,</span><span class="n">circuit</span><span class="o">.</span><span class="n">n_dim</span><span class="p">))</span><span class="o">.</span><span class="n">transpose</span><span class="p">())</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Eigenstate &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="p">)</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">phi_0</span> <span class="p">,</span>
@@ -630,10 +606,9 @@ $\displaystyle - E_{J010} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{1} \ri
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/fluxqubit_17_0.png" src="_images/fluxqubit_17_0.png" />
+<img alt="_images/transmon_c_resonator_15_0.png" src="_images/transmon_c_resonator_15_0.png" />
 </div>
 </div>
-<p>We find that the lowest two eigenstates are located at the double well between the maxima of the potential.</p>
 </section>
 </section>
 
@@ -643,8 +618,8 @@ $\displaystyle - E_{J010} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{1} \ri
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="transmon_c_resonator.html" class="btn btn-neutral float-right" title="Transmon coupled to a resonator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="lc_circuit.html" class="btn btn-neutral float-left" title="LC Circuit" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api_reference.html" class="btn btn-neutral float-right" title="API reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="fluxqubit.html" class="btn btn-neutral float-left" title="Flux Qubit" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
