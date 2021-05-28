@@ -406,6 +406,7 @@ class CircuitQ:
         pot_energy_imp = 0 #The potential energy for implementation w/ different basis
         used_c = []
         nbr_loop_fluxes = dict()
+        phi_0_symbol = sp.symbols('\Phi_{o}')
 
         for n_sg, sg in enumerate(red_subgraphs):
             for e in sg.edges(data=True, keys=True):
@@ -465,7 +466,7 @@ class CircuitQ:
                         number_j = len(self.josephson_energies[(u,v)])
                         josesphson_energy = sp.symbols('E_{J' + str(u) + str(v) + str(number_j) + '}')
                         self.josephson_energies[(u,v)].append(josesphson_energy)
-                        pot_energy -= josesphson_energy * sp.cos(var/self.phi_0)
+                        pot_energy -= josesphson_energy * sp.cos(var/phi_0_symbol)
                         if len(loop_flux_var_indices) > 0:
                             self.loop_fluxes_in_cos_arg[(u,v,number_j)] = loop_flux_var_indices
                         if self.periodic[u] is True and self.periodic[v] is True:
