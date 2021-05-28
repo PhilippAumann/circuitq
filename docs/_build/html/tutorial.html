@@ -834,9 +834,9 @@ Total T1 = 2.026503e-05 s
 </div>
 <div class="output_area docutils container">
 <div class="math notranslate nohighlight">
-$\displaystyle - E_{J010} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{1} \right)} + \frac{\left(\Phi_{1} + \tilde{\Phi}_{010}\right)^{2}}{2 L_{010}} + \frac{0.5 \left(q_{1} + qo_{1}\right)^{2}}{C_{01}}$</div></div>
+$\displaystyle - E_{J010} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{1} \right)} + \frac{\left(\Phi_{1} + \tilde{\Phi}_{010}\right)^{2}}{2 L_{010}} + \frac{0.5 \left(\tilde{q}_{1} + q_{1}\right)^{2}}{C_{01}}$</div></div>
 </div>
-<p>The node charge <span class="math notranslate nohighlight">\(q_1\)</span> is now shifted by an offset charge <span class="math notranslate nohighlight">\(qo_1\)</span>. This new variable now also appears in in the parameter list:</p>
+<p>The node charge <span class="math notranslate nohighlight">\(q_1\)</span> is now shifted by an offset charge <span class="math notranslate nohighlight">\(\tilde{q}_1\)</span>. This new variable now also appears in in the parameter list:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
@@ -852,7 +852,7 @@ $\displaystyle - E_{J010} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{1} \ri
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-[C_{01}, E_{J010}, L_{010}, \tilde{\Phi}_{010}, qo_{1}]
+[C_{01}, E_{J010}, L_{010}, \tilde{\Phi}_{010}, \tilde{q}_{1}]
 </pre></div></div>
 </div>
 <p>Finally, we can also study the impact of the external charge on the spectrum of the exemplary circuit.</p>
@@ -871,7 +871,7 @@ $\displaystyle - E_{J010} \cos{\left(3.03853489761902 \cdot 10^{15} \Phi_{1} \ri
     <span class="n">eigenvalues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eigv</span><span class="p">)</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">q_off_list</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">circuit</span><span class="o">.</span><span class="n">e</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">eigenvalues</span><span class="p">)</span><span class="o">*</span><span class="n">y_scaling</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Charge offset $ qo_1 / (2e)$&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Charge offset $\tilde</span><span class="si">{q}</span><span class="s2">_1 / (2e)$&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Energy in GHz$\cdot$h&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>

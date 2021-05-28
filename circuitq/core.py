@@ -537,7 +537,7 @@ class CircuitQ:
             self.q_dict[node] = q
             q_vec_list_without_offset.append(q)
             if node in self.offset_nodes:
-                o = sp.symbols('qo_{' + str(node) + '}')
+                o = sp.symbols(r'\tilde{q}_{' + str(node) + '}')
                 self.offset_dict[node] = o
                 q_vec_list.append(q + o)
             else:
@@ -729,13 +729,12 @@ class CircuitQ:
                         else:
                             parameter_values[n] = value
                         break
-                if (('tilde' in str(self.h_parameters[n])
-                        or 'qo' in str(self.h_parameters[n]))
+                if ('tilde' in str(self.h_parameters[n])
                     and default_zero is True):
                     parameter_values[n] = 0
-                elif 'tilde' in str(self.h_parameters[n]):
+                elif 'tilde{\Phi}' in str(self.h_parameters[n]):
                     parameter_values[n] = np.pi*self.phi_0
-                elif 'qo' in str(self.h_parameters[n]):
+                elif 'tilde{q}' in str(self.h_parameters[n]):
                     parameter_values[n] = 2*self.e
 
         if any(p is False for p in parameter_values):
