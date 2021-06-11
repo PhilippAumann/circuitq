@@ -30,7 +30,7 @@ Table of contents
    api_reference.rst
 
 .. note::
-   Please refer to our preprint on arXiv (...include link...) for more details on physics and implementation and to cite our project.
+   Please refer to our `preprint on arXiv <http://arxiv.org/abs/2106.05342>`_ for more details on physics and implementation and to cite our project.
 
 The source code can be found on `CircuitQ's repository at GitHub <https://github.com/PhilippAumann/circuitq>`_.
 
