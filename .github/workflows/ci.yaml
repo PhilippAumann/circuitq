@@ -21,3 +21,24 @@ jobs:
         run: pip install -e .
       - name: Run tests
         run: cd test && python -m unittest
+
+  lint:
+    name: Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-${{ env.pythonLocation }}-pip-${{ hashFiles('**/setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ env.pythonLocation }}-pip-
+      - name: Install dependencies
+        run: |
+          pip install -e .
+          pip install pylint
+      - name: Run pylint
+        run: pylint circuitq
