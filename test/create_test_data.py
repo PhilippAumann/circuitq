@@ -63,5 +63,5 @@ eigv_fluxqubit, eigs_fluxqubit = circuit.get_eigensystem(30)
 main_dir = os.path.abspath('..')
 data_path = os.path.join(main_dir, 'test/unittest_data.npy')
 np.save(data_path,
-        [[eigv_lc, eigv_transmon, eigv_fluxonium, eigv_fluxqubit],
-         [eigs_lc, eigs_transmon, eigs_fluxonium, eigs_fluxqubit]])
+        np.array([[eigv_lc, eigv_transmon, eigv_fluxonium, eigv_fluxqubit],
+                  [eigs_lc, eigs_transmon, eigs_fluxonium, eigs_fluxqubit]], dtype=object))
