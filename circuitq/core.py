@@ -1,7 +1,6 @@
 import copy
 import warnings
 import networkx as nx
-import circuitq.functions_file as my
 import math
 import sympy as sp
 import numpy as np
@@ -151,9 +150,9 @@ class CircuitQ:
                     if ('C' in edge[3]['element'] and
                         ((edge[0] == u and edge[1] == v) or
                          (edge[1] == u and edge[0] == v))
-                        and edge[2] != key):
-                            self.circuit_graph.remove_edge(edge[0], edge[1], key=edge[2])
-                            removed = True
+                            and edge[2] != key):
+                        self.circuit_graph.remove_edge(edge[0], edge[1], key=edge[2])
+                        removed = True
                 # Rename element to indicate that the capacitances have been merged
                 if removed:
                     for item in self.circuit_graph.edges(data=True, keys=True):
@@ -213,7 +212,7 @@ class CircuitQ:
                     u_f = o_e[1]
                 else:
                     u_f = o_e[0]
-                if u_f == e_f[0] or u_f == e_f[1]:
+                if u_f in (e_f[0], e_f[1]):
                     raise Exception("Circle of capacitances")
                 e_f = o_e
             return u_f
@@ -351,7 +350,7 @@ class CircuitQ:
             if node in self.ground_nodes:
                 self.phi_dict[node] = 0
             else:
-                phi = sp.symbols('\Phi_{' + str(node) + '}')
+                phi = sp.symbols(r'\Phi_{' + str(node) + '}')
                 self.phi_dict[node] = phi
 
         # =============================================================================
@@ -372,7 +371,7 @@ class CircuitQ:
         # via a Josephson junction are periodic as well
         periodic_dict = copy.deepcopy(self.periodic)
         changed_dict = True
-        while(changed_dict):
+        while changed_dict:
             periodic_loop = copy.deepcopy(periodic_dict)
             loop_break = False
             for key, value in periodic_loop.items():
@@ -406,7 +405,7 @@ class CircuitQ:
         pot_energy_imp = 0 #The potential energy for implementation w/ different basis
         used_c = []
         nbr_loop_fluxes = dict()
-        phi_0_symbol = sp.symbols('\Phi_{o}')
+        phi_0_symbol = sp.symbols(r'\Phi_{o}')
 
         for n_sg, sg in enumerate(red_subgraphs):
             for e in sg.edges(data=True, keys=True):
@@ -587,7 +586,7 @@ class CircuitQ:
         h_parameters = list(sorted(h.free_symbols, key=str))
         h_parameters_loop = copy.deepcopy(h_parameters)
         for element in h_parameters_loop:
-            if (str(element).startswith('\Phi_') or
+            if (str(element).startswith(r'\Phi_') or
                 str(element).startswith('q_')):
                 h_parameters.remove(element)
         if self.print_feedback:
@@ -733,7 +732,7 @@ class CircuitQ:
                 if ('tilde' in str(self.h_parameters[n])
                     and default_zero is True):
                     parameter_values[n] = 0
-                elif 'tilde{\Phi}' in str(self.h_parameters[n]):
+                elif r'tilde{\Phi}' in str(self.h_parameters[n]):
                     parameter_values[n] = np.pi*self.phi_0
                 elif 'tilde{q}' in str(self.h_parameters[n]):
                     parameter_values[n] = 2*self.e
@@ -784,7 +783,7 @@ class CircuitQ:
                         mtx_list[n_mtx_list] = -1j*self.hbar*der_mtx(self.flux_list,
                                                                      periodic=False)
                     if n in self.offset_nodes:
-                         mtx_list[n_mtx_list] += offset * spa.identity(self.n_dim)
+                        mtx_list[n_mtx_list] += offset * spa.identity(self.n_dim)
                 elif var_type=='q_quadratic':
                     if n in self.charge_basis_nodes:
                         mtx_list[n_mtx_list] = q_mtx(self.n_cutoff)**2
@@ -979,8 +978,7 @@ class CircuitQ:
                 check_level += 1
             for l in range(excited_level,k):
                 quotient = abs((self.evals[k]-self.evals[l])/(self.evals[excited_level]-self.evals[0]))
-                if quotient >= 2:
-                    quotient = 2
+                quotient = min(quotient, 2)
                 quotients.append(quotient)
             if check_level >= nbr_check_levels:
                 break
@@ -1022,11 +1020,11 @@ class CircuitQ:
         position_shifted = False
         basis_states = dict()
         count = 0
-        while (position >= 0):
+        while position >= 0:
             value = state_indices[position] + 1
             if value > self.n_dim - 1:
                 for n in range(position, n_subs):
-                   state_indices[n] = 0
+                    state_indices[n] = 0
                 position -= 1
                 position_shifted = True
             else:
@@ -1166,7 +1164,7 @@ class CircuitQ:
 
             # Calculate T1 contribution
             # =====================================================================
-            for n_j, energy in enumerate(energies):
+            for energy in energies:
                 E_J = self.parameter_values[self.h_parameters.index(energy)]
                 braket = np.dot(self.ground_state.conjugate().transpose(),
                                 eigs_shifted[:,excited_level])
