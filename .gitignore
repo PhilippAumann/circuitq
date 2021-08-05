@@ -2,6 +2,7 @@
 *.egg-info/
 __pycache__/
 notebooks/.ipynb_checkpoints/
+.idea/*
 data/*
 figures/*
 debug/*

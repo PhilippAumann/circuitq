@@ -6,7 +6,7 @@ import math
 import sympy as sp
 import numpy as np
 import scipy.sparse as spa
-import scipy.linalg as linalg
+import scipy.sparse.linalg as spa_linalg
 
 class CircuitQ:
     """
@@ -920,7 +920,7 @@ class CircuitQ:
         self.n_eig = n_eig
         v0 = [0]*dim_total
         v0[0] = 1
-        evals, estates = spa.linalg.eigsh(self.h_num, k=self.n_eig, which='SA'#)
+        evals, estates = spa_linalg.eigsh(self.h_num, k=self.n_eig, which='SA'#)
                                           ,v0=v0)
         idx_sort = np.argsort(evals)
         self.evals = evals[idx_sort]
