@@ -16,13 +16,13 @@ class TestCircuitQ(unittest.TestCase):
         self.benchmark_data = np.load(benchmark_data_path, allow_pickle=True)
 
     def test_eigenenergies(self):
-        print("Test eigenenergies of LC-Circuit, Transmon, Fluxoinium and Flux Qubit")
+        print("Test eigenenergies of LC-Circuit, Transmon, Fluxonium and Flux Qubit")
         for n, evals in enumerate(self.test_data[0]):
             np.testing.assert_almost_equal(evals, self.benchmark_data[0][n], decimal=25)
             #self.assertAlmostEqual(evals, self.benchmark_data[0][n], delta=1e-25)
 
     def test_eigenstates(self):
-        print("Test eigenstates of LC-Circuit, Transmon, Fluxoinium and Flux Qubit")
+        print("Test eigenstates of LC-Circuit, Transmon, Fluxonium and Flux Qubit")
         for n, evals in enumerate(self.test_data[1]):
             np.testing.assert_almost_equal(evals, self.benchmark_data[1][n], decimal=3)
             # self.assertAlmostEqual(evals, self.benchmark_data[1][n], places=5)
