@@ -23,10 +23,14 @@ class TestCircuitQ(unittest.TestCase):
 
     def test_eigenstates(self):
         print("Test eigenstates of LC-Circuit, Transmon, Fluxonium and Flux Qubit")
-        for n, evals in enumerate(self.test_data[1]):
-            np.testing.assert_almost_equal(evals, self.benchmark_data[1][n], decimal=3)
+        for n, estates in enumerate(self.test_data[1]):
+            for l, k in enumerate(range(estates.shape[1])):
+                if l > 10:
+                    break
+                np.testing.assert_almost_equal(np.real(estates[:,k]*np.conjugate(estates[:,k])),
+                    np.real(self.benchmark_data[1][n][:,k]*np.conjugate(self.benchmark_data[1][n][:,k])),
+                                                   decimal=3)
             # self.assertAlmostEqual(evals, self.benchmark_data[1][n], places=5)
-
 
 if __name__ == '__main__':
     unittest.main()
