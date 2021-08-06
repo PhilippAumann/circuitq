@@ -1,7 +1,6 @@
 
 import networkx as nx
 import copy
-import sys
 
 def visualize_circuit_general(graph, save_as):
     """
@@ -28,6 +27,3 @@ def visualize_circuit_general(graph, save_as):
     circuit_vis.node_attr['fontname'] = 'DejaVuSans'
     circuit_vis.node_attr['fontname'] = 'DejaVuSans'
     circuit_vis.draw(path=save_as + '.pdf' , prog='dot', format='pdf')
-
-
-
