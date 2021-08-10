@@ -1,8 +1,10 @@
 .DS_Store
 *.egg-info/
 __pycache__/
-notebooks/.ipynb_checkpoints/
-.idea/*
+.ipynb_checkpoints/
+.idea/
+.pytest_cache/
+_build/
 data/*
 figures/*
 debug/*
