@@ -54,7 +54,6 @@ class CircuitQ:
         self.deleted_edges = []
         self.c_matrix_inv = None
         self.inductances = dict()
-        self.josephson_energies = dict()
         self.loop_fluxes_in_cos_arg = dict()
         self.get_classical_hamiltonian_run = False
         self.spanning_trees_edges = []
@@ -64,12 +63,15 @@ class CircuitQ:
         self.q_dict = dict()
         self.q_quadratic_dict = dict()
         self.periodic = dict()
+        self.josephson_energies_global_dict = dict()
         self.charge_basis_nodes = []
         self.loop_fluxes = dict()
         self.cos_charge_dict = dict()
         self.sin_charge_dict = dict()
+        self.sin_phi_half_operators_dict = dict()
         self.offset_dict = dict()
         self.current_operators_imp = []
+        self.sin_phi_half_operators = []
         self.v = None
         self.pot_energy_imp = None
         self.h, self.h_parameters, self.h_imp = self.get_classical_hamiltonian()
@@ -78,6 +80,7 @@ class CircuitQ:
         self.n_cutoff = None
         self.flux_list = []
         self.charge_list = []
+        self.mtx_id_list = []
         self.subspace_pos = dict()
         self.charge_subspaces = []
         self.loop_fluxes_num = dict()
@@ -89,6 +92,7 @@ class CircuitQ:
         self.h_num = None
         self.v_num_list = []
         self.current_operators_num = []
+        self.sin_phi_half_operators_num = []
         self.n_eig = None
         self.evals = None
         self.estates = None
@@ -404,6 +408,7 @@ class CircuitQ:
         pot_energy = 0
         pot_energy_imp = 0 #The potential energy for implementation w/ different basis
         used_c = []
+        josephson_energies = dict()
         nbr_loop_fluxes = dict()
         phi_0_symbol = sp.symbols(r'\Phi_{o}')
 
@@ -460,31 +465,41 @@ class CircuitQ:
                         if closure_branch:
                             self.current_operators_imp.append(var/inductance)
                     if 'J' in element:
-                        if ((u,v)) not in self.josephson_energies.keys():
-                            self.josephson_energies[(u,v)] = []
-                        number_j = len(self.josephson_energies[(u,v)])
-                        josesphson_energy = sp.symbols('E_{J' + str(u) + str(v) + str(number_j) + '}')
-                        self.josephson_energies[(u,v)].append(josesphson_energy)
-                        pot_energy -= josesphson_energy * sp.cos(var/phi_0_symbol)
+                        if ((u,v)) not in josephson_energies.keys():
+                            josephson_energies[(u,v)] = []
+                        number_j = len(josephson_energies[(u,v)])
+                        josephson_energy = sp.symbols('E_{J' + str(u) + str(v) + str(number_j) + '}')
+                        josephson_energies[(u,v)].append(josephson_energy)
+                        self.josephson_energies_global_dict[(u, v, number_j)] = josephson_energy
+                        pot_energy -= josephson_energy * sp.cos(var/phi_0_symbol)
                         if len(loop_flux_var_indices) > 0:
                             self.loop_fluxes_in_cos_arg[(u,v,number_j)] = loop_flux_var_indices
                         if self.periodic[u] is True and self.periodic[v] is True:
+                            # Cosine operator for charge basis implementation
                             cos_charge = sp.symbols('cos_{' + str(u) + str(v) + str(number_j) + '}')
                             if u not in self.charge_basis_nodes:
                                 self.charge_basis_nodes.append(u)
                             if v not in self.charge_basis_nodes:
                                 self.charge_basis_nodes.append(v)
                             self.cos_charge_dict[(u,v,number_j)] = cos_charge
-                            pot_energy_imp -= josesphson_energy * cos_charge
-                            if closure_branch:
+                            pot_energy_imp -= josephson_energy * cos_charge
+                            # Sine phi half operator for charge basis implementation
+                            sin_phi_half_charge = sp.symbols('sin_phi_half_{' + str(u) + str(v) +
+                                                             str(number_j) + '}')
+                            self.sin_phi_half_operators_dict[(u, v, number_j)] = sin_phi_half_charge
+                            self.sin_phi_half_operators.append(sin_phi_half_charge)
+                            if closure_branch:  # Current operator for charge basis implementation
                                 sin_charge = sp.symbols('sin_{' + str(u) + str(v) + str(number_j) + '}')
                                 self.sin_charge_dict[(u,v,number_j)] = sin_charge
-                                self.current_operators_imp.append(2 * self.e * josesphson_energy / self.hbar
+                                self.current_operators_imp.append(2 * self.e * josephson_energy / self.hbar
                                                                   * sin_charge)
                         else:
-                            pot_energy_imp -= josesphson_energy * sp.cos(var/self.phi_0)
+                            pot_energy_imp -= josephson_energy * sp.cos(var/self.phi_0)
+                            sin_phi_half_flux = sp.sin(var/(2*self.phi_0))
+                            self.sin_phi_half_operators.append(sin_phi_half_flux)
+                            self.sin_phi_half_operators_dict[(u, v, number_j)] = sin_phi_half_flux
                             if closure_branch:
-                                self.current_operators_imp.append(2*self.e*josesphson_energy/self.hbar
+                                self.current_operators_imp.append(2*self.e*josephson_energy/self.hbar
                                                                   * sp.sin(var/self.phi_0))
 
         # =============================================================================
@@ -565,8 +580,8 @@ class CircuitQ:
         # =============================================================================
         # Define Hamiltonian for numerical implementation with
         # seperated quadratic charges.
-        # The offset is not explicitly given here,
-        # but is implemented in the numerical matrices in get_numerical_hamiltonian
+        # (The offset is not explicitly given here,
+        # but is implemented in the numerical matrices in get_numerical_hamiltonian)
         # =============================================================================
         c_matrix_inv_sep = copy.deepcopy(self.c_matrix_inv)
         h_kin_sep = 0
@@ -600,6 +615,31 @@ class CircuitQ:
         return h, h_parameters, h_imp
 
 
+    def _kron_product(self, mtx_list):
+        """
+        Create the kronecker product of list of matrices. Used within CircuitQ to
+        construct the total operators out of a list of operators acting on the subspaces.
+
+        Parameters
+        ----------
+        mtx_list: list
+            List of sparse matrices, which should be combined by the kronecker product.
+
+        Returns
+        ----------
+        mtx_num: scipy sparse matrix
+            Total operator constructed by the kronecker product.
+
+        """
+        nbr_subsystems = len(mtx_list)
+        if nbr_subsystems == 1:
+            mtx_num = mtx_list[0]
+        else:
+            mtx_num = spa.kron(mtx_list[0], mtx_list[1])
+            for i in range(2, nbr_subsystems):
+                mtx_num = spa.kron(mtx_num, mtx_list[i])
+        return mtx_num
+
     def get_numerical_hamiltonian(self, n_dim, grid_length = None,
                                   parameter_values = None, default_zero = True):
         """
@@ -613,9 +653,9 @@ class CircuitQ:
             the value is set to the next odd number. This is done to match the
             dimension of matrices between the charge and flux basis.
         grid_length: float (Default 4*np.pi*phi_0)
-            The coordinate grid is taken from -grid_length to +grid_length in n_dim steps
+            The coordinate grid is taken from -grid_length to +grid_length in n_dim steps.
         parameter_values: list
-            Numerical values of system parameters (corresponds to self.h_parameters)
+            Numerical values of system parameters (corresponds to self.h_parameters).
         default_zero: bool (Default True)
 
 
@@ -702,17 +742,6 @@ class CircuitQ:
                 m[n,n-1] = 1
             return spa.csr_matrix(m)
 
-        # Create Kronecker Product of matrix list
-        def kron_product(mtx_list):
-            nbr_subsystems = len(mtx_list)
-            if nbr_subsystems == 1:
-                mtx_num = mtx_list[0]
-            else:
-                mtx_num = spa.kron(mtx_list[0], mtx_list[1])
-                for i in range(2, nbr_subsystems):
-                    mtx_num = spa.kron(mtx_num, mtx_list[i])
-            return mtx_num
-
         # =============================================================================
         # Define default parameter values if not given
         # =============================================================================
@@ -751,14 +780,16 @@ class CircuitQ:
         phi_matrices, q_matrices, q_quadratic_matrices = [], [], []
         cos_charge_matrices = []
         sin_charge_matrices = []
+        sin_phi_half_matrices = []
         phi_list, q_list, q_quadratic_list = [], [], [] # without ground, input for lambdify
         cos_charge_list = []
         sin_charge_list = []
+        sin_phi_half_list = []
         nbr_subsystems = len(self.nodes_wo_ground)
         self.n_cutoff = int((self.n_dim-1) / 2 )
         self.flux_list = np.linspace(-self.grid_length, self.grid_length, self.n_dim)
         self.charge_list = 2*self.e*np.arange(-self.n_cutoff, self.n_cutoff+1)
-        mtx_id_list = [np.identity(self.n_dim) for n in range(nbr_subsystems)]
+        self.mtx_id_list = [spa.identity(self.n_dim) for n in range(nbr_subsystems)]
         n_mtx_list = 0
         # q-matrices in charge and flux basis, phi-matrices (flux basis)
         # =============================================================================
@@ -773,7 +804,7 @@ class CircuitQ:
                 parameter_pos = self.h_parameters.index(self.offset_dict[n])
                 offset = parameter_values[parameter_pos]
             for var_type in ['phi', 'q', 'q_quadratic']:
-                mtx_list = copy.deepcopy(mtx_id_list)
+                mtx_list = copy.deepcopy(self.mtx_id_list)
                 if var_type=='phi':
                     mtx_list[n_mtx_list] = phi_mtx(self.flux_list)
                 elif var_type=='q':
@@ -797,7 +828,7 @@ class CircuitQ:
                             mtx_list[n_mtx_list] += (-2*offset *1j*self.hbar*der_mtx(self.flux_list,
                                                                      periodic=False) +
                                                     offset**2 * spa.identity(self.n_dim) )
-                mtx_num = kron_product(mtx_list)
+                mtx_num = self._kron_product(mtx_list)
                 if var_type=='phi':
                     self.phi_num_dict[n] = mtx_num
                     if n not in self.charge_basis_nodes:
@@ -810,17 +841,21 @@ class CircuitQ:
                     q_quadratic_matrices.append(mtx_num)
                     q_quadratic_list.append(self.q_quadratic_dict[n])
             n_mtx_list += 1
-        # cos- and sin-matrices (charge basis)
+        # cos-, sin-matrices and sin-phi-half-matrices (charge basis)
         # =============================================================================
         for indices, cos in self.cos_charge_dict.items():
-            mtx_list = copy.deepcopy(mtx_id_list)
+            mtx_list = copy.deepcopy(self.mtx_id_list)
+            mtx_list_single_charge = copy.deepcopy(self.mtx_id_list)
             if indices[0] not in self.ground_nodes:
                 pos_u = self.subspace_pos[indices[0]]
                 mtx_list[pos_u] = cmplx_exp_phi_mtx(self.n_cutoff).getH()
+                mtx_list_single_charge[pos_u] = cmplx_exp_phi_mtx(2*self.n_cutoff).getH()
             if indices[1] not in self.ground_nodes:
                 pos_v = self.subspace_pos[indices[1]]
                 mtx_list[pos_v] = cmplx_exp_phi_mtx(self.n_cutoff)
-            mtx_num = kron_product(mtx_list)
+                mtx_list_single_charge[pos_v] = cmplx_exp_phi_mtx(2*self.n_cutoff)
+            mtx_num = self._kron_product(mtx_list)
+            mtx_num_single_charge = self._kron_product(mtx_list_single_charge)
             loop_flux = 0
             if indices in self.loop_fluxes_in_cos_arg.keys():
                 for loop_flux_index in self.loop_fluxes_in_cos_arg[indices]:
@@ -828,9 +863,13 @@ class CircuitQ:
                     parameter_pos = self.h_parameters.index(l_f)
                     loop_flux += self.parameter_values[parameter_pos]
             mtx_num = np.exp(-1j*loop_flux/self.phi_0) * mtx_num
+            mtx_num_single_charge = np.exp(-1j*loop_flux/(2*self.phi_0)) * mtx_num_single_charge
             mtx_num_cos = 0.5*(mtx_num + mtx_num.getH())
             cos_charge_matrices.append(mtx_num_cos)
             cos_charge_list.append(cos)
+            mtx_num_sin_phi_half = 0.5j*(mtx_num_single_charge.getH()-mtx_num_single_charge)
+            sin_phi_half_matrices.append(mtx_num_sin_phi_half)
+            sin_phi_half_list.append(self.sin_phi_half_operators_dict[indices])
             if indices in self.sin_charge_dict.keys():
                 mtx_num_sin = 0.5j*(mtx_num.getH()-mtx_num)
                 sin_charge_matrices.append(mtx_num_sin)
@@ -844,7 +883,7 @@ class CircuitQ:
                 key[1] in self.charge_basis_nodes):
                 continue
             node_list = [key[0], key[1]]
-            mtx_list = copy.deepcopy(mtx_id_list)
+            mtx_list = copy.deepcopy(self.mtx_id_list)
             parameter_pos = self.h_parameters.index(value)
             for n in node_list:
                 if self.phi_dict[n] == 0:
@@ -853,7 +892,7 @@ class CircuitQ:
                                                     spa.identity(self.n_dim))
                 # The offset should only be added once
                 break
-            mtx_num = kron_product(mtx_list)
+            mtx_num = self._kron_product(mtx_list)
             self.loop_fluxes_num[key] = mtx_num
             _parameter_values[parameter_pos] = mtx_num
 
@@ -894,6 +933,15 @@ class CircuitQ:
                                       element, modules = [{'sin': mtx_sin}, 'numpy'])
             input_num = phi_matrices + sin_charge_matrices + _parameter_values
             self.current_operators_num.append(num_element(*input_num))
+
+        # =============================================================================
+        # Define sin-phi-half operator via lambdify
+        # =============================================================================
+        for element in self.sin_phi_half_operators:
+            num_element = sp.lambdify(phi_list + sin_phi_half_list + self.h_parameters,
+                                      element, modules = [{'sin': mtx_sin}, 'numpy'])
+            input_num = phi_matrices + sin_phi_half_matrices + _parameter_values
+            self.sin_phi_half_operators_num.append(num_element(*input_num))
 
         return self.h_num
 
@@ -1101,8 +1149,8 @@ class CircuitQ:
 
     def get_T1_quasiparticles(self, excited_level=None):
         """
-        Estimates the T1 contribution due to quasiparticles. See the noise.pdf file in the notes
-        folder for more details about the formulas that have been used for this method.
+        Estimates the T1 contribution due to quasiparticles. See the preprint on arXiv
+        for more details about the formulas that have been used for this method.
 
         Parameters
         ----------
@@ -1115,6 +1163,24 @@ class CircuitQ:
             T1 contribution due to quasiparticles.
         """
         # =============================================================================
+        # Define transformation from cooper pair charge basis
+        # to odd and even single charge basis
+        # =============================================================================
+        def cooper_to_even(dim):
+            dim_single = 2*dim-1
+            mtx = np.zeros((dim_single, dim))
+            for n in range(dim):
+                mtx[2*n, n] = 1
+            return spa.csr_matrix(mtx)
+
+        def cooper_to_odd(dim):
+            dim_single = 2*dim-1
+            mtx = np.zeros((dim_single, dim))
+            for n in range(dim-1):
+                mtx[2*n+1, n] = 1
+            return spa.csr_matrix(mtx)
+
+        # =============================================================================
         # Set numerical values for parameters
         # =============================================================================
         self._qubit_states_energy()
@@ -1123,53 +1189,43 @@ class CircuitQ:
         T_c = 1.2 #K
         k_b = 1.380649e-23 #J/K
         delta = 1.76*T_c*k_b #superconducting gap
-        # T = 20e-3 #K
         x_qp = 1e-7 #np.sqrt(2*np.pi*k_b*T/delta)*np.exp(-delta/(k_b*T))
+
+        # =============================================================================
+        # Set ground state and excited state
+        # =============================================================================
+        ground_state = spa.csr_matrix(self.ground_state)
+        excited_state = spa.csr_matrix(self.estates[:,excited_level])
 
         # =============================================================================
         # Calculate T1 contribution
         # =============================================================================
         T1_inv = 0
-        for nodes, energies in self.josephson_energies.items():
-            # Create circuit shifted by 1e
-            # =====================================================================
-            shifted_node = None
-            for node in nodes:
-                if node not in self.ground_nodes:
-                    shifted_node = node
-                    break
-            if shifted_node is None:
-                continue
-            offset_nodes_with_shifted = copy.deepcopy(self.offset_nodes)
-            shifted_in_offset_nodes = True
-            if shifted_node not in self.offset_nodes:
-                shifted_in_offset_nodes = False
-                offset_nodes_with_shifted.append(shifted_node)
-            shifted_circuit = CircuitQ(self.circuit_graph,
-                                       offset_nodes = offset_nodes_with_shifted)
-            shifted_parameter_values = []
-            for parameter in shifted_circuit.h_parameters:
-                if parameter == shifted_circuit.offset_dict[shifted_node]:
-                    if shifted_in_offset_nodes:
-                        shifted_value = (self.parameter_values_dict[parameter] +
-                                         self.e)
-                    else:
-                        shifted_value = self.e
-                    shifted_parameter_values.append(shifted_value)
-                else:
-                    shifted_parameter_values.append(self.parameter_values_dict[parameter])
-            shifted_circuit.get_numerical_hamiltonian(self.n_dim, grid_length=self.grid_length,
-                                                      parameter_values=shifted_parameter_values)
-            _, eigs_shifted = shifted_circuit.get_eigensystem(self.n_eig)
+        transform_even = cooper_to_even(self.n_dim)
+        transform_odd = cooper_to_odd(self.n_dim)
 
-            # Calculate T1 contribution
-            # =====================================================================
-            for energy in energies:
-                E_J = self.parameter_values[self.h_parameters.index(energy)]
-                braket = np.dot(self.ground_state.conjugate().transpose(),
-                                eigs_shifted[:,excited_level])
-                T1_inv += abs(braket) ** 2 * x_qp * (8 * E_J/ (self.hbar * 2 * np.pi)) * np.sqrt(
+        for indices, sin_phi_half in self.sin_phi_half_operators_dict.items():
+            mtx_list_even = copy.deepcopy(self.mtx_id_list)
+            mtx_list_odd = copy.deepcopy(self.mtx_id_list)
+            for node in indices[:2]:
+                if ((node not in self.ground_nodes) and
+                    (node in self.charge_basis_nodes)):
+                    pos = self.subspace_pos[node]
+                    mtx_list_even[pos] = transform_even
+                    mtx_list_odd[pos] = transform_odd
+            transform_even_num = self._kron_product(mtx_list_even)
+            transform_odd_num = self._kron_product(mtx_list_odd)
+            operator_pos = self.sin_phi_half_operators.index(sin_phi_half)
+            sin_phi_half_operator = self.sin_phi_half_operators_num[operator_pos]
+            braket = (ground_state.conjugate() * transform_even_num.transpose() *
+                      sin_phi_half_operator *
+                      transform_odd_num * excited_state.transpose()).data[0]
+            E_J = self.parameter_values_dict[self.josephson_energies_global_dict[indices]]
+            S_qp = x_qp * (8 * E_J/ (self.hbar * 2 * np.pi)) * np.sqrt(
                     8*delta / self.omega_q)
+            print("S_qp Quasiparticles: {:e}".format(S_qp))
+            T1_inv += abs(braket)**2 * S_qp
+
         if T1_inv==0:
             T1 = None
         else:
@@ -1177,10 +1233,12 @@ class CircuitQ:
         self.T1_quasiparticle = T1
         return self.T1_quasiparticle
 
+
+
     def get_T1_charge(self, excited_level=None):
         """
-        Estimates the T1 contribution due to charge noise. See the noise.pdf file in the notes
-        folder for more details about the formulas that have been used for this method.
+        Estimates the T1 contribution due to charge noise. See the preprint on arXiv
+        for more details about the formulas that have been used for this method.
 
         Parameters
         ----------
@@ -1199,6 +1257,7 @@ class CircuitQ:
         gamma_q = 1
         A_q = self.e*1e-3
         S_q = A_q**2 * (2*np.pi*self.hbar/self.omega_q)**gamma_q
+        print("S_q Charge: {:e}".format(S_q/self.hbar**2))
 
         # =============================================================================
         # Set ground state and excited state
@@ -1212,22 +1271,9 @@ class CircuitQ:
         # Calculate T1 contribution
         # =============================================================================
         T1_inv = 0
-
         for voltage_element in self.v_num_list:
             T1_inv += S_q/self.hbar**2 * abs((excited_state.conjugate()*voltage_element*
                                              ground_state.transpose()).data[0])**2
-
-        # Safely delete this paragraph after debug
-        # print("============== DEBUG")
-        # print("S_q =", S_q)
-        # print("Matrix element = ", abs((excited_state.conjugate()*voltage_element*
-        #                                      ground_state.transpose()).data[0])**2)
-        # print("Ground State =", self.ground_state[30:50])
-        # print("Excited State =", self.estates[:,excited_level][30:50])
-        # print("v_num:", self.v_num_list)
-        # print("============== DEBUG END")
-        ####
-
         if T1_inv==0:
             T1 = None
         else:
@@ -1238,8 +1284,8 @@ class CircuitQ:
 
     def get_T1_flux(self, excited_level=None):
         """
-        Estimates the T1 contribution due to flux noise. See the noise.pdf file in the notes
-        folder for more details about the formulas that have been used for this method.
+        Estimates the T1 contribution due to flux noise. See the preprint on arXiv
+        for more details about the formulas that have been used for this method.
 
         Parameters
         ----------
@@ -1258,6 +1304,7 @@ class CircuitQ:
         gamma_phi = .8
         A_phi = self.phi_0*1e-6
         S_phi = A_phi**2 * (2*np.pi*self.hbar/self.omega_q)**gamma_phi
+        print("S_phi Flux: {:e}".format(S_phi/self.hbar**2))
 
         # =============================================================================
         # Set ground state and excited state
