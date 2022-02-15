@@ -38,7 +38,7 @@ class CircuitQ:
         self.e = 1.602176634e-19
         self.hbar = 1.054571817e-34
         #Characteristic Values
-        c_v = dict()
+        c_v = {}
         c_v["C"] =1e-13 #F
         c_v["L"] = 1e-7 #H
         c_v["E_C"] = self.e ** 2 / (2 * c_v["C"])
@@ -53,28 +53,28 @@ class CircuitQ:
         self.delete_edges = []
         self.deleted_edges = []
         self.c_matrix_inv = None
-        self.inductances = dict()
-        self.inductances_full_index = dict()
-        self.edge_flux_inductance = dict()
-        self.edge_flux_inductance_num = dict()
-        self.loop_fluxes_in_cos_arg = dict()
+        self.inductances = {}
+        self.inductances_full_index = {}
+        self.edge_flux_inductance = {}
+        self.edge_flux_inductance_num = {}
+        self.loop_fluxes_in_cos_arg = {}
         self.get_classical_hamiltonian_run = False
         self.spanning_trees_edges = []
         self.nodes = []
-        self.capacitances = dict()
+        self.capacitances = {}
         self.nodes_wo_ground = []
-        self.phi_dict = dict()
-        self.q_dict = dict()
-        self.q_quadratic_dict = dict()
-        self.q_matrices_num_dict = dict()
-        self.periodic = dict()
-        self.josephson_energies_global_dict = dict()
+        self.phi_dict = {}
+        self.q_dict = {}
+        self.q_quadratic_dict = {}
+        self.q_matrices_num_dict = {}
+        self.periodic = {}
+        self.josephson_energies_global_dict = {}
         self.charge_basis_nodes = []
-        self.loop_fluxes = dict()
-        self.cos_charge_dict = dict()
-        self.sin_charge_dict = dict()
-        self.sin_phi_half_operators_dict = dict()
-        self.offset_dict = dict()
+        self.loop_fluxes = {}
+        self.cos_charge_dict = {}
+        self.sin_charge_dict = {}
+        self.sin_phi_half_operators_dict = {}
+        self.offset_dict = {}
         self.current_operators_imp = []
         self.current_operators_all_imp = []
         self.sin_phi_half_operators = []
@@ -87,18 +87,18 @@ class CircuitQ:
         self.flux_list = []
         self.charge_list = []
         self.mtx_id_list = []
-        self.subspace_pos = dict()
+        self.subspace_pos = {}
         self.charge_subspaces = []
-        self.loop_fluxes_num = dict()
+        self.loop_fluxes_num = {}
         self.parameter_values = []
-        self.parameter_values_dict = dict()
+        self.parameter_values_dict = {}
         self.input_num_list = []
-        self.phi_num_dict = dict()
+        self.phi_num_dict = {}
         self.potential = None
         self.h_num = None
         self.v_num_list = []
-        # self.capacitances_sum_dict = dict()
-        # self.capacitances_sum_dict_num = dict()
+        # self.capacitances_sum_dict = {}
+        # self.capacitances_sum_dict_num = {}
         self.current_operators_num = []
         self.current_operators_all_num = []
         self.sin_phi_half_operators_num = []
@@ -417,8 +417,8 @@ class CircuitQ:
         pot_energy = 0
         pot_energy_imp = 0 #The potential energy for implementation w/ different basis
         used_c = []
-        josephson_energies = dict()
-        nbr_loop_fluxes = dict()
+        josephson_energies = {}
+        nbr_loop_fluxes = {}
         phi_0_symbol = sp.symbols(r'\Phi_{o}')
 
         for n_sg, sg in enumerate(red_subgraphs):
@@ -448,8 +448,8 @@ class CircuitQ:
                         used_c.append(parallel_c)
                     else:
                         closure_branch = True
-                        if (str(u) + str(v) not in nbr_loop_fluxes.keys()
-                            or str(v) + str(u) not in nbr_loop_fluxes.keys()):
+                        if (str(u) + str(v) not in nbr_loop_fluxes
+                            or str(v) + str(u) not in nbr_loop_fluxes):
                             nbr_l_f = 0
                         else:
                             nbr_l_f = nbr_loop_fluxes[str(u) + str(v)] + 1
@@ -464,7 +464,7 @@ class CircuitQ:
                         var = self.phi_dict[v] - self.phi_dict[u] + loop_flux_var
                     # Add terms for junctions or inductances to the potential energy
                     if 'L' in element:
-                        if str(u) + str(v) not in self.inductances.keys():
+                        if str(u) + str(v) not in self.inductances:
                             self.inductances[str(u) + str(v)] = []
                         number_ind = len(self.inductances[str(u) + str(v)])
                         inductance = sp.symbols('L_{' + str(u) + str(v) + str(number_ind) +'}')
@@ -479,7 +479,7 @@ class CircuitQ:
                         if closure_branch:
                             self.current_operators_imp.append(current_operator)
                     if 'J' in element:
-                        if ((u,v)) not in josephson_energies.keys():
+                        if ((u,v)) not in josephson_energies:
                             josephson_energies[(u,v)] = []
                         number_j = len(josephson_energies[(u,v)])
                         josephson_energy = sp.symbols('E_{J' + str(u) + str(v) + str(number_j) + '}')
@@ -528,7 +528,7 @@ class CircuitQ:
         # Define C matrix and q vector
         # =============================================================================
         nbr_nodes = len(self.nodes)
-        capacitances = dict()
+        capacitances = {}
         c_matrix = sp.zeros(nbr_nodes, nbr_nodes)
         # Define non-reduced capactive sub-network
         graph_l = copy.deepcopy(self.circuit_graph)
@@ -549,7 +549,7 @@ class CircuitQ:
                 elif nbr_edges != 1:
                     raise Exception("More than one capacity is connecting two nodes.")
                 else:
-                    if (v,u) in list(capacitances.keys()):
+                    if (v,u) in list(capacitances):
                         capacitance = capacitances[(v, u)]
                     else:
                         if 'Cp' in edge[0][3]['element']:
@@ -568,7 +568,7 @@ class CircuitQ:
         # Define q vector
         q_vec_list = []
         q_vec_list_without_offset = []
-        self.q_dict = dict()
+        self.q_dict = {}
         for node in self.nodes:
             q = sp.symbols('q_{' + str(node) + '}')
             self.q_dict[node] = q
@@ -637,8 +637,8 @@ class CircuitQ:
 
         return h, h_parameters, h_imp
 
-
-    def _kron_product(self, mtx_list):
+    @staticmethod
+    def _kron_product(mtx_list):
         """
         Create the kronecker product of list of matrices. Used within CircuitQ to
         construct the total operators out of a list of operators acting on the subspaces.
@@ -882,7 +882,7 @@ class CircuitQ:
             mtx_num = self._kron_product(mtx_list)
             mtx_num_single_charge = self._kron_product(mtx_list_single_charge)
             loop_flux = 0
-            if indices in self.loop_fluxes_in_cos_arg.keys():
+            if indices in self.loop_fluxes_in_cos_arg:
                 for loop_flux_index in self.loop_fluxes_in_cos_arg[indices]:
                     l_f = self.loop_fluxes[loop_flux_index]
                     parameter_pos = self.h_parameters.index(l_f)
@@ -895,7 +895,7 @@ class CircuitQ:
             mtx_num_sin_phi_half = -0.5j*(mtx_num_single_charge.getH()-mtx_num_single_charge)
             sin_phi_half_matrices.append(mtx_num_sin_phi_half)
             sin_phi_half_list.append(self.sin_phi_half_operators_dict[indices])
-            if indices in self.sin_charge_dict.keys():
+            if indices in self.sin_charge_dict:
                 mtx_num_sin = 0.5j*(mtx_num.getH()-mtx_num)
                 sin_charge_matrices.append(mtx_num_sin)
                 sin_charge_list.append(self.sin_charge_dict[indices])
@@ -954,7 +954,7 @@ class CircuitQ:
         # =============================================================================
         # for node in self.nodes_wo_ground:
         #     capcitances_sum = 0
-        #     for key in self.capacitances.keys():
+        #     for key in self.capacitances:
         #         if str(node) in key:
         #             capcitances_sum += self.capacitances[key]
         #     self.capacitances_sum_dict[node] = capcitances_sum
@@ -1118,7 +1118,7 @@ class CircuitQ:
         state_indices[-1] = -1
         position = n_subs - 1
         position_shifted = False
-        basis_states = dict()
+        basis_states = {}
         count = 0
         while position >= 0:
             value = state_indices[position] + 1
@@ -1358,7 +1358,7 @@ class CircuitQ:
         for nodes, capacitance in self.capacitances.items():
             charge_operators_of_branch = []
             for node in nodes:
-                if node in self.q_matrices_num_dict.keys():
+                if node in self.q_matrices_num_dict:
                     charge_operators_of_branch.append(self.q_matrices_num_dict[node])
                 else:
                     charge_operators_of_branch.append(0)
