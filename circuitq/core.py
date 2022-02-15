@@ -54,14 +54,19 @@ class CircuitQ:
         self.deleted_edges = []
         self.c_matrix_inv = None
         self.inductances = dict()
+        self.inductances_full_index = dict()
+        self.edge_flux_inductance = dict()
+        self.edge_flux_inductance_num = dict()
         self.loop_fluxes_in_cos_arg = dict()
         self.get_classical_hamiltonian_run = False
         self.spanning_trees_edges = []
         self.nodes = []
+        self.capacitances = dict()
         self.nodes_wo_ground = []
         self.phi_dict = dict()
         self.q_dict = dict()
         self.q_quadratic_dict = dict()
+        self.q_matrices_num_dict = dict()
         self.periodic = dict()
         self.josephson_energies_global_dict = dict()
         self.charge_basis_nodes = []
@@ -71,6 +76,7 @@ class CircuitQ:
         self.sin_phi_half_operators_dict = dict()
         self.offset_dict = dict()
         self.current_operators_imp = []
+        self.current_operators_all_imp = []
         self.sin_phi_half_operators = []
         self.v = None
         self.pot_energy_imp = None
@@ -91,7 +97,10 @@ class CircuitQ:
         self.potential = None
         self.h_num = None
         self.v_num_list = []
+        # self.capacitances_sum_dict = dict()
+        # self.capacitances_sum_dict_num = dict()
         self.current_operators_num = []
+        self.current_operators_all_num = []
         self.sin_phi_half_operators_num = []
         self.n_eig = None
         self.evals = None
@@ -105,8 +114,8 @@ class CircuitQ:
         self.ground_state = None
         self.omega_q = None
         self.T1_quasiparticle = None
-        self.T1_charge = None
-        self.T1_flux = None
+        self.T1_dielectric_loss = None
+        self.T1_inductive_loss = None
 
     def get_classical_hamiltonian(self):
         """
@@ -460,10 +469,15 @@ class CircuitQ:
                         number_ind = len(self.inductances[str(u) + str(v)])
                         inductance = sp.symbols('L_{' + str(u) + str(v) + str(number_ind) +'}')
                         self.inductances[str(u) + str(v)].append(inductance)
+                        self.inductances_full_index[(u, v, number_ind)] = inductance
+                        self.edge_flux_inductance[(u, v, number_ind)] = var
                         pot_energy += var**2/(2*inductance)
                         pot_energy_imp += var**2/(2*inductance)
+                        # Current operator
+                        current_operator = var/inductance
+                        self.current_operators_all_imp.append(current_operator)
                         if closure_branch:
-                            self.current_operators_imp.append(var/inductance)
+                            self.current_operators_imp.append(current_operator)
                     if 'J' in element:
                         if ((u,v)) not in josephson_energies.keys():
                             josephson_energies[(u,v)] = []
@@ -475,6 +489,7 @@ class CircuitQ:
                         if len(loop_flux_var_indices) > 0:
                             self.loop_fluxes_in_cos_arg[(u,v,number_j)] = loop_flux_var_indices
                         if self.periodic[u] is True and self.periodic[v] is True:
+                            # Will be implemented in charge basis
                             # Cosine operator for charge basis implementation
                             cos_charge = sp.symbols('cos_{' + str(u) + str(v) + str(number_j) + '}')
                             if u not in self.charge_basis_nodes:
@@ -488,19 +503,26 @@ class CircuitQ:
                                                              str(number_j) + '}')
                             self.sin_phi_half_operators_dict[(u, v, number_j)] = sin_phi_half_charge
                             self.sin_phi_half_operators.append(sin_phi_half_charge)
-                            if closure_branch:  # Current operator for charge basis implementation
-                                sin_charge = sp.symbols('sin_{' + str(u) + str(v) + str(number_j) + '}')
-                                self.sin_charge_dict[(u,v,number_j)] = sin_charge
-                                self.current_operators_imp.append(2 * self.e * josephson_energy / self.hbar
-                                                                  * sin_charge)
+                            # Current operator for charge basis implementation
+                            sin_charge = sp.symbols('sin_{' + str(u) + str(v) + str(number_j) + '}')
+                            self.sin_charge_dict[(u, v, number_j)] = sin_charge
+                            current_operator = (2 * self.e * josephson_energy / self.hbar
+                                                * sin_charge)
+                            self.current_operators_all_imp.append(current_operator)
+                            if closure_branch:
+                                self.current_operators_imp.append(current_operator)
                         else:
+                            # Will be implemented in flux basis
                             pot_energy_imp -= josephson_energy * sp.cos(var/self.phi_0)
                             sin_phi_half_flux = sp.sin(var/(2*self.phi_0))
                             self.sin_phi_half_operators.append(sin_phi_half_flux)
                             self.sin_phi_half_operators_dict[(u, v, number_j)] = sin_phi_half_flux
+                            # Current operator for flux basis implementation
+                            current_operator = (2*self.e*josephson_energy/self.hbar
+                                                * sp.sin(var/self.phi_0))
+                            self.current_operators_all_imp.append(current_operator)
                             if closure_branch:
-                                self.current_operators_imp.append(2*self.e*josephson_energy/self.hbar
-                                                                  * sp.sin(var/self.phi_0))
+                                self.current_operators_imp.append(current_operator)
 
         # =============================================================================
         # Define C matrix and q vector
@@ -527,14 +549,14 @@ class CircuitQ:
                 elif nbr_edges != 1:
                     raise Exception("More than one capacity is connecting two nodes.")
                 else:
-                    if str(v) + str(u) in list(capacitances.keys()):
-                        capacitance = capacitances[str(v) + str(u)]
+                    if (v,u) in list(capacitances.keys()):
+                        capacitance = capacitances[(v, u)]
                     else:
                         if 'Cp' in edge[0][3]['element']:
                             capacitance = sp.symbols('Cp_{' + str(u) + str(v) + '}')
                         else:
                             capacitance = sp.symbols('C_{' + str(u) + str(v) + '}')
-                        capacitances[str(u) + str(v)] = capacitance
+                        capacitances[(u, v)] = capacitance
                     c_matrix[n,k] = - capacitance
         # Define diagonal elements as the sum of the row entries
         for n in range(nbr_nodes):
@@ -569,6 +591,7 @@ class CircuitQ:
             q_vec_without_offset.row_del(ground_idx)
             nodes_l.remove(g_n)
 
+        self.capacitances = capacitances
         self.nodes_wo_ground = nodes_l
         self.c_matrix_inv = c_matrix.inv()
 
@@ -837,10 +860,12 @@ class CircuitQ:
                 elif var_type=='q':
                     q_matrices.append(mtx_num)
                     q_list.append(self.q_dict[n])
+                    self.q_matrices_num_dict[n] = mtx_num
                 elif var_type=='q_quadratic':
                     q_quadratic_matrices.append(mtx_num)
                     q_quadratic_list.append(self.q_quadratic_dict[n])
             n_mtx_list += 1
+
         # cos-, sin-matrices and sin-phi-half-matrices (charge basis)
         # =============================================================================
         for indices, cos in self.cos_charge_dict.items():
@@ -867,7 +892,7 @@ class CircuitQ:
             mtx_num_cos = 0.5*(mtx_num + mtx_num.getH())
             cos_charge_matrices.append(mtx_num_cos)
             cos_charge_list.append(cos)
-            mtx_num_sin_phi_half = 0.5j*(mtx_num_single_charge.getH()-mtx_num_single_charge)
+            mtx_num_sin_phi_half = -0.5j*(mtx_num_single_charge.getH()-mtx_num_single_charge)
             sin_phi_half_matrices.append(mtx_num_sin_phi_half)
             sin_phi_half_list.append(self.sin_phi_half_operators_dict[indices])
             if indices in self.sin_charge_dict.keys():
@@ -901,7 +926,6 @@ class CircuitQ:
         # Potential as a List
         # =============================================================================
         if nbr_subsystems == 1 and len(self.charge_basis_nodes) == 0:
-            input_list = phi_list + self.h_parameters
             potential_lambda = sp.lambdify(phi_list + self.h_parameters,
                                            self.pot_energy_imp)
             potential = [potential_lambda(flux, *self.parameter_values) for flux in
@@ -926,6 +950,21 @@ class CircuitQ:
             self.v_num_list.append(num_element(*input_num))
 
         # =============================================================================
+        # Define sum of capacitances connected to a node
+        # =============================================================================
+        # for node in self.nodes_wo_ground:
+        #     capcitances_sum = 0
+        #     for key in self.capacitances.keys():
+        #         if str(node) in key:
+        #             capcitances_sum += self.capacitances[key]
+        #     self.capacitances_sum_dict[node] = capcitances_sum
+        #
+        # for node, element in self.capacitances_sum_dict.items():
+        #     num_element = sp.lambdify(self.h_parameters, element)
+        #     input_num = self.parameter_values
+        #     self.capacitances_sum_dict_num[node] = num_element(*input_num)
+
+        # =============================================================================
         # Define numerical current operator via lambdify
         # =============================================================================
         for element in self.current_operators_imp:
@@ -933,6 +972,11 @@ class CircuitQ:
                                       element, modules = [{'sin': mtx_sin}, 'numpy'])
             input_num = phi_matrices + sin_charge_matrices + _parameter_values
             self.current_operators_num.append(num_element(*input_num))
+        for element in self.current_operators_all_imp:
+            num_element = sp.lambdify(phi_list + sin_charge_list + self.h_parameters,
+                                      element, modules = [{'sin': mtx_sin}, 'numpy'])
+            input_num = phi_matrices + sin_charge_matrices + _parameter_values
+            self.current_operators_all_num.append(num_element(*input_num))
 
         # =============================================================================
         # Define sin-phi-half operator via lambdify
@@ -942,6 +986,14 @@ class CircuitQ:
                                       element, modules = [{'sin': mtx_sin}, 'numpy'])
             input_num = phi_matrices + sin_phi_half_matrices + _parameter_values
             self.sin_phi_half_operators_num.append(num_element(*input_num))
+
+        # =============================================================================
+        # Define edge flux operators for linear inductive branches via lambdify
+        # =============================================================================
+        for indices, element in self.edge_flux_inductance.items():
+            num_element = sp.lambdify(phi_list + self.h_parameters, element)
+            input_num = phi_matrices + _parameter_values
+            self.edge_flux_inductance_num[indices] = num_element(*input_num)
 
         return self.h_num
 
@@ -1186,10 +1238,15 @@ class CircuitQ:
         self._qubit_states_energy()
         if excited_level is None:
             excited_level = self.excited_level
-        T_c = 1.2 #K
-        k_b = 1.380649e-23 #J/K
-        delta = 1.76*T_c*k_b #superconducting gap
-        x_qp = 1e-7 #np.sqrt(2*np.pi*k_b*T/delta)*np.exp(-delta/(k_b*T))
+        T_c = 1.2 # K
+        k_b = 1.380649e-23 # J/K
+        delta = 1.76*T_c*k_b # superconducting gap
+        x_qp = 1e-8 #np.sqrt(2*np.pi*k_b*T/delta)*np.exp(-delta/(k_b*T))
+        # Define Noise Spectral density without E_J (in accordance with
+        # Catelani et al. https://doi.org/10.1103/PhysRevB.84.064517)
+        S_qp = x_qp * (8 / (self.hbar * np.pi)) * np.sqrt(
+            2 * delta / self.omega_q)
+        # print("CircuitQ: Omega {:e}".format(self.omega_q / (self.hbar * 2 * np.pi)))
 
         # =============================================================================
         # Set ground state and excited state
@@ -1221,10 +1278,26 @@ class CircuitQ:
                       sin_phi_half_operator *
                       transform_odd_num * excited_state.transpose()).data[0]
             E_J = self.parameter_values_dict[self.josephson_energies_global_dict[indices]]
-            S_qp = x_qp * (8 * E_J/ (self.hbar * 2 * np.pi)) * np.sqrt(
-                    8*delta / self.omega_q)
-            print("S_qp Quasiparticles: {:e}".format(S_qp))
-            T1_inv += abs(braket)**2 * S_qp
+            S_qp_E = S_qp * E_J
+            # print("CircuitQ: E_J: {:e}".format(E_J))
+            # print("CircuitQ: S_qp Quasiparticles Junction: {:e}".format(S_qp_E))
+            # print("CircuitQ: Braket Junction: {:e}".format(abs(braket)))
+            T1_inv += S_qp_E * abs(braket)**2
+            # print("CircuitQ: Junction T1 contribution: {:e}".format(1/(S_qp_E * abs(braket)**2)))
+
+        for indices, edge_flux in self.edge_flux_inductance_num.items():
+            inductance_symbol = self.inductances_full_index[indices]
+            inductance = self.parameter_values_dict[inductance_symbol]
+            E_L = self.phi_0**2/inductance
+            S_qp_L = S_qp * E_L
+            braket = (ground_state.conjugate() *
+                      edge_flux/(2*self.phi_0) *
+                      excited_state.transpose()).data[0]
+            # print("CircuitQ: E_L: {:e}".format(E_L))
+            # print("CircuitQ: S_qp Quasiparticles Inductance: {:e}".format(S_qp_L))
+            # print("CircuitQ: Braket Inductance: {:e}".format(abs(braket)))
+            T1_inv += S_qp_L * abs(braket) ** 2
+            # print("CircuitQ: Inductance T1 contribution: {:e}".format(1 /(S_qp_L * abs(braket) ** 2)))
 
         if T1_inv==0:
             T1 = None
@@ -1235,9 +1308,9 @@ class CircuitQ:
 
 
 
-    def get_T1_charge(self, excited_level=None):
+    def get_T1_dielectric_loss(self, excited_level=None):
         """
-        Estimates the T1 contribution due to charge noise. See the preprint on arXiv
+        Estimates the T1 contribution due to dielectric loss. See the preprint on arXiv
         for more details about the formulas that have been used for this method.
 
         Parameters
@@ -1247,17 +1320,27 @@ class CircuitQ:
 
         Returns
         ----------
-        T1_charge: float
-            T1 contribution due to charge noise.
+        T1_dielectric_loss: float
+            T1 contribution due to dielectric loss.
         """
         # =============================================================================
         # Set numerical values for parameters
         # =============================================================================
         self._qubit_states_energy()
-        gamma_q = 1
-        A_q = self.e*1e-3
-        S_q = A_q**2 * (2*np.pi*self.hbar/self.omega_q)**gamma_q
-        print("S_q Charge: {:e}".format(S_q/self.hbar**2))
+        Q_cap = 3e6*(2*np.pi*self.hbar*6e9/self.omega_q)**0.7
+        k_b = 1.380649e-23
+        T = 0.015
+        thermal_factor = self.omega_q/(k_b*T)
+        # Define Noise Spectral Density without C
+        # Smith et al.:
+        # S_q = 2*self.hbar/Q_cap * 1/np.tanh(thermal_factor/2) / (1 +
+        #                                                      np.exp(thermal_factor))
+        # Nguyen et al.:
+        S_q = self.hbar/Q_cap * (1 + 1/np.tanh(thermal_factor/2) )
+
+        # print("CircuitQ: Omega {:e}".format(self.omega_q/(self.hbar*2*np.pi)))
+        # print("CircuitQ: Thermal Factor {:e}".format(thermal_factor))
+        # print("CircuitQ: Q_cap {:e}".format(Q_cap))
 
         # =============================================================================
         # Set ground state and excited state
@@ -1271,18 +1354,36 @@ class CircuitQ:
         # Calculate T1 contribution
         # =============================================================================
         T1_inv = 0
-        for voltage_element in self.v_num_list:
-            T1_inv += S_q/self.hbar**2 * abs((excited_state.conjugate()*voltage_element*
-                                             ground_state.transpose()).data[0])**2
+
+        for nodes, capacitance in self.capacitances.items():
+            charge_operators_of_branch = []
+            for node in nodes:
+                if node in self.q_matrices_num_dict.keys():
+                    charge_operators_of_branch.append(self.q_matrices_num_dict[node])
+                else:
+                    charge_operators_of_branch.append(0)
+            charge_operators_difference = (charge_operators_of_branch[1] -
+                                          charge_operators_of_branch[0])
+            braket = (ground_state.conjugate() * charge_operators_difference *
+                      excited_state.transpose()).data[0]
+            capacitance_value = self.parameter_values_dict[capacitance]
+            T1_inv += S_q / (self.hbar ** 2 * capacitance_value) * abs(braket) ** 2
+            # print("CircuitQ: NSD rescaled {:e}".format(S_q / self.hbar ** 2 / capacitance_value *
+            #                                            (2 * self.e)**2))
+            # print("CircuitQ: S_q rescaled (to compare to S_qp): {:e}".format(S_q/
+            #                     (self.hbar ** 2 * 2 * np.pi * capacitance_value)*(2*self.e)**2))
+            # print("CircuitQ: Braket Rescaled {:e}".format((abs(braket) / (2 * self.e))))
+            # print("CircuitQ: T1_inv {:e}".format(T1_inv))
+
         if T1_inv==0:
             T1 = None
         else:
             T1 = 1/T1_inv
-        self.T1_charge = T1
-        return self.T1_charge
+        self.T1_dielectric_loss = T1
 
+        return self.T1_dielectric_loss
 
-    def get_T1_flux(self, excited_level=None):
+    def get_T1_flux(self, excited_level=None, lower_bound=False):
         """
         Estimates the T1 contribution due to flux noise. See the preprint on arXiv
         for more details about the formulas that have been used for this method.
@@ -1291,6 +1392,10 @@ class CircuitQ:
         ----------
         excited_level: int (Default: Number of first state above the groundstate)
             Number of state, which is considered to be the excited state.
+        lower_bound: bool (Default:False)
+            If set to True, a lower bound for the T1 contribution will be calculated
+            by summing over all inductive branches
+            (not just closure branches as in default mode)
 
         Returns
         ----------
@@ -1301,10 +1406,16 @@ class CircuitQ:
         # Set numerical values for parameters
         # =============================================================================
         self._qubit_states_energy()
-        gamma_phi = .8
-        A_phi = self.phi_0*1e-6
-        S_phi = A_phi**2 * (2*np.pi*self.hbar/self.omega_q)**gamma_phi
-        print("S_phi Flux: {:e}".format(S_phi/self.hbar**2))
+
+        A_phi = 2*np.pi*self.phi_0*1e-6
+        # Yan et al.:
+        # gamma_phi = .9
+        # S_phi = A_phi**2 * (2*np.pi*self.hbar/self.omega_q)**gamma_phi
+        # Nguyen et al.:
+        S_phi = (self.hbar**2/(2*self.e)**2
+                 * (1/self.phi_0**2)
+                 * 2 * np.pi * A_phi ** 2 * self.hbar / self.omega_q)
+        # print("CircuitQ: Omega {:e}".format(self.omega_q / (self.hbar * 2 * np.pi)))
 
         # =============================================================================
         # Set ground state and excited state
@@ -1318,12 +1429,26 @@ class CircuitQ:
         # Calculate T1 contribution
         # =============================================================================
         T1_inv = 0
-        for current_element in self.current_operators_num:
-            T1_inv += S_phi/self.hbar**2 * abs((excited_state.conjugate()*current_element*
-                                             ground_state.transpose()).data[0])**2
+        if lower_bound is False:
+            for current_element in self.current_operators_num:
+                braket = (excited_state.conjugate()*current_element*
+                                                 ground_state.transpose()).data[0]
+                # print("CircuitQ: Braket Rescaled {:e}".format(abs(braket)
+                #                               *self.parameter_values[2]/self.phi_0))
+                # print("CircuitQ: S_phi rescaled {:e}".format(S_phi/self.hbar**2
+                #                         *self.parameter_values[2]**2/self.phi_0**2))
+                T1_inv += S_phi/self.hbar**2 * abs(braket)**2
+        else:
+            for current_element in self.current_operators_all_num:
+                braket = (ground_state.conjugate()*current_element*
+                                                 excited_state.transpose()).data[0]
+                # print("CircuitQ: Braket Rescaled {:e}".format(abs(braket)))
+                #                               #*self.parameter_values[2]))
+                T1_inv += S_phi/self.hbar**2 * abs(braket)**2
         if T1_inv==0:
             T1 = None
         else:
             T1 = 1/T1_inv
-        self.T1_flux = T1
-        return self.T1_flux
+        self.T1_inductive_loss = T1
+
+        return self.T1_inductive_loss
