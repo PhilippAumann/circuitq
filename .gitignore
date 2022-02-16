@@ -11,6 +11,7 @@ debug/*
 optimization/*
 notebooks/*
 notes/*
+dist/*
 *.aux
 *.log
 *.out
