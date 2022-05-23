@@ -813,7 +813,7 @@ class CircuitQ:
                                        self.n_dim)
                 self.flux_grid_dict[n] = phi_grid
                 for loop_flux_index, loop_flux in self.loop_fluxes.items():
-                    if ((n == loop_flux_index[0] or n == loop_flux_index[1])
+                    if ((n in (loop_flux_index[0], loop_flux_index[1]))
                        and loop_flux not in loop_fluxes_considered):
                         # If there is a shift of a parabola due to loop flux,
                         # we shift to the parabola minimum
