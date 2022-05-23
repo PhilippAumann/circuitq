@@ -85,6 +85,7 @@ class CircuitQ:
         self.grid_length = None
         self.n_cutoff = None
         self.flux_list = []
+        self.flux_grid_dict = {}
         self.charge_list = []
         self.mtx_id_list = []
         self.subspace_pos = {}
@@ -663,7 +664,7 @@ class CircuitQ:
                 mtx_num = spa.kron(mtx_num, mtx_list[i])
         return mtx_num
 
-    def get_numerical_hamiltonian(self, n_dim, grid_length = None,
+    def get_numerical_hamiltonian(self, n_dim, grid_length = None, unit_cell = False,
                                   parameter_values = None, default_zero = True):
         """
         Creates a numerical representation of the Hamiltonian using the
@@ -677,6 +678,10 @@ class CircuitQ:
             dimension of matrices between the charge and flux basis.
         grid_length: float (Default 4*np.pi*phi_0)
             The coordinate grid is taken from -grid_length to +grid_length in n_dim steps.
+        unit_cell: bool (Default False)
+            If set to True, the coordinate grid for the flux variables is taken to capture
+            the unit cell of the potential. If False, grid_length is used to determine
+            the coordinate grid.
         parameter_values: list
             Numerical values of system parameters (corresponds to self.h_parameters).
         default_zero: bool (Default True)
@@ -688,7 +693,7 @@ class CircuitQ:
             Numeric Hamiltonian of the circuit given as a matrix in array form
         """
         # =============================================================================
-        # Setting default paramter value for grid_length and set n_dim to odd value
+        # Setting default parameter value for grid_length and set n_dim to odd value
         # =============================================================================
         if grid_length is None:
             grid_length = 4 * np.pi * self.phi_0
@@ -798,6 +803,34 @@ class CircuitQ:
             self.parameter_values_dict[parameter] = self.parameter_values[n]
 
         # =============================================================================
+        # Setting flux grids to unit cell if demanded
+        # =============================================================================
+        loop_fluxes_considered = []
+        inductances_indices = list(self.edge_flux_inductance.keys())
+        if unit_cell:
+            for n in self.nodes_wo_ground:
+                phi_grid = np.linspace(-np.pi * self.phi_0, np.pi * self.phi_0,
+                                       self.n_dim)
+                self.flux_grid_dict[n] = phi_grid
+                for loop_flux_index, loop_flux in self.loop_fluxes.items():
+                    if ((n == loop_flux_index[0] or n == loop_flux_index[1])
+                       and loop_flux not in loop_fluxes_considered):
+                        # If there is a shift of a parabola due to loop flux,
+                        # we shift to the parabola minimum
+                        for index_set in inductances_indices:
+                            if n == index_set[1]:
+                                self.flux_grid_dict[n] -= self.parameter_values_dict[loop_flux]
+                                break
+                            if n == index_set[0] and index_set[1] in self.ground_nodes:
+                                self.flux_grid_dict[n] -= self.parameter_values_dict[loop_flux]
+                                break
+                        loop_fluxes_considered.append(loop_flux)
+        else:
+            for n in self.nodes_wo_ground:
+                self.flux_grid_dict[n] = np.linspace(-self.grid_length, self.grid_length,
+                                                     self.n_dim)
+
+        # =============================================================================
         # Define numerical matrices
         # =============================================================================
         phi_matrices, q_matrices, q_quadratic_matrices = [], [], []
@@ -820,6 +853,10 @@ class CircuitQ:
             if phi==0:
                 self.phi_num_dict[n] = 0
                 continue
+            if unit_cell:
+                flux_grid = self.flux_grid_dict[n]
+            else:
+                flux_grid = self.flux_list
             self.subspace_pos[n] = n_mtx_list
             if n in self.charge_basis_nodes:
                 self.charge_subspaces.append(n_mtx_list)
@@ -829,12 +866,12 @@ class CircuitQ:
             for var_type in ['phi', 'q', 'q_quadratic']:
                 mtx_list = copy.deepcopy(self.mtx_id_list)
                 if var_type=='phi':
-                    mtx_list[n_mtx_list] = phi_mtx(self.flux_list)
+                    mtx_list[n_mtx_list] = phi_mtx(flux_grid)
                 elif var_type=='q':
                     if n in self.charge_basis_nodes:
                         mtx_list[n_mtx_list] = q_mtx(self.n_cutoff)
                     else:
-                        mtx_list[n_mtx_list] = -1j*self.hbar*der_mtx(self.flux_list,
+                        mtx_list[n_mtx_list] = -1j*self.hbar*der_mtx(flux_grid,
                                                                      periodic=False)
                     if n in self.offset_nodes:
                         mtx_list[n_mtx_list] += offset * spa.identity(self.n_dim)
@@ -845,10 +882,10 @@ class CircuitQ:
                             mtx_list[n_mtx_list] = (q_mtx(self.n_cutoff) +
                                                          offset * spa.identity(self.n_dim)) ** 2
                     else:
-                        mtx_list[n_mtx_list] = -1*(self.hbar**2)*scnd_der_mtx(self.flux_list,
+                        mtx_list[n_mtx_list] = -1*(self.hbar**2)*scnd_der_mtx(flux_grid,
                                                                             periodic=False)
                         if n in self.offset_nodes:
-                            mtx_list[n_mtx_list] += (-2*offset *1j*self.hbar*der_mtx(self.flux_list,
+                            mtx_list[n_mtx_list] += (-2*offset *1j*self.hbar*der_mtx(flux_grid,
                                                                      periodic=False) +
                                                     offset**2 * spa.identity(self.n_dim) )
                 mtx_num = self._kron_product(mtx_list)
@@ -929,7 +966,7 @@ class CircuitQ:
             potential_lambda = sp.lambdify(phi_list + self.h_parameters,
                                            self.pot_energy_imp)
             potential = [potential_lambda(flux, *self.parameter_values) for flux in
-                         self.flux_list]
+                         flux_grid]
             self.potential = potential
 
         # =============================================================================
@@ -1138,6 +1175,8 @@ class CircuitQ:
         # =============================================================================
         # Define the transformation matrix T
         # =============================================================================
+        # Gives nodes corresponding to subspace position :
+        reversed_subspace_pos = dict(map(reversed, self.subspace_pos.items()))
         length = len(self.estates[:,0])
         T = np.ones((length, length), dtype=np.complex)
         for i in range(length):
@@ -1146,7 +1185,9 @@ class CircuitQ:
                 j_states = basis_states[j]
                 for n, j_state in enumerate(j_states):
                     if n in self.charge_subspaces:
-                        T[i,j] *= np.exp(-1j*self.flux_list[i_states[n]]*
+                        node = reversed_subspace_pos[n]
+                        flux_list = self.flux_grid_dict[node]
+                        T[i,j] *= np.exp(-1j*flux_list[i_states[n]]*
                                     self.charge_list[j_state]/self.hbar)
                     else:
                         if i_states[n]!=j_state:
