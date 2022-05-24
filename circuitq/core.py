@@ -1462,9 +1462,6 @@ class CircuitQ:
                  * 2 * np.pi * A_phi ** 2 * self.hbar / self.omega_q)
         # print("CircuitQ: Omega {:e}".format(self.omega_q / (self.hbar * 2 * np.pi)))
 
-        # Safely delete after debug
-        print("S_phi", S_phi)
-
         # =============================================================================
         # Set ground state and excited state
         # =============================================================================
@@ -1472,13 +1469,6 @@ class CircuitQ:
             excited_level = self.excited_level
         ground_state = spa.csr_matrix(self.ground_state)
         excited_state = spa.csr_matrix(self.estates[:,excited_level])
-
-        # Safely delete after debug
-        import matplotlib.pyplot as plt
-        plt.plot(abs(ground_state.toarray())[0])
-        plt.show()
-        plt.plot(abs(excited_state.toarray())[0])
-        plt.show()
 
         # =============================================================================
         # Calculate T1 contribution
@@ -1492,10 +1482,6 @@ class CircuitQ:
                 #                               *self.parameter_values[2]/self.phi_0))
                 # print("CircuitQ: S_phi rescaled {:e}".format(S_phi/self.hbar**2
                 #                         *self.parameter_values[2]**2/self.phi_0**2))
-
-                # Safely delete after debug
-                print("braket", braket)
-
                 T1_inv += S_phi/self.hbar**2 * abs(braket)**2
         else:
             for current_element in self.current_operators_all_num:
