@@ -1497,4 +1497,3 @@ class CircuitQ:
         self.T1_inductive_loss = T1
 
         return self.T1_inductive_loss
-
