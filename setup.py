@@ -2,7 +2,7 @@ import os, sys
 from setuptools import setup, find_packages
 
 setup(name='circuitq',
-      version='1.2.0',
+      version='1.2.1',
       description='Automated design of superconducting qubits',
       url='https://github.com/PhilippAumann/circuitq',
       author='CircuitQ Team',
