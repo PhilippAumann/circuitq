@@ -13,7 +13,7 @@ class CircuitQ:
     """
     def __init__(self, circuit_graph, ground_nodes = None,
                  offset_nodes = None, force_flux_nodes=None,
-                 print_feedback=False):
+                 print_feedback=False, natural_units=False):
         """
         Creates a circuit from a given graph.
 
@@ -33,16 +33,32 @@ class CircuitQ:
             self.get_numerical_hamiltonian()
         print_feedback: bool (Default False)
             Bool to control printed feedback
+        natural_units: bool (Default False)
+            If True, natural units will be used to get convenient numerical values.
+            In these units hbar=1 and 2e=1. The energy is expected to be in units
+            of angular frequency, while the conventional frequency is given in
+            units of GHz.
+            If False, SI-units are used.
         """
         self.circuit_graph = circuit_graph
-        self.e = 1.602176634e-19
-        self.hbar = 1.054571817e-34
+        if natural_units:
+            self.e = 0.5
+            self.hbar = 1
+        else:
+            self.e = 1.602176634e-19
+            self.hbar = 1.054571817e-34
         #Characteristic Values
         c_v = {}
-        c_v["C"] =1e-13 #F
-        c_v["L"] = 1e-7 #H
-        c_v["E_C"] = self.e ** 2 / (2 * c_v["C"])
-        c_v["E"] = 50 * c_v["E_C"]
+        if natural_units:
+            c_v["C"] = 1/(8*2*np.pi)
+            c_v["L"] = 1/(2*np.pi)
+            c_v["E_C"] = 2*np.pi
+            c_v["E"] = 2*np.pi*3
+        else:
+            c_v["C"] =1e-13 #F
+            c_v["L"] = 1e-7 #H
+            c_v["E_C"] = self.e ** 2 / (2 * c_v["C"])
+            c_v["E"] = 50 * c_v["E_C"]
         self.c_v = c_v
         # The definition of phi_0 is not consistent in the literature (variant: h/(2e) )
         self.phi_0 = self.hbar/(2*self.e)
@@ -80,6 +96,7 @@ class CircuitQ:
         self.sin_phi_half_operators = []
         self.v = None
         self.pot_energy_imp = None
+        self.loop_flux_positions = []
         self.h, self.h_parameters, self.h_imp = self.get_classical_hamiltonian()
         self.n_dim = None
         self.grid_length = None
@@ -632,6 +649,13 @@ class CircuitQ:
             print("The parameters of the circuit are " + str(h_parameters))
 
         # =============================================================================
+        # Find parameter position for loop fluxes
+        # =============================================================================
+        for n, element in enumerate(h_parameters):
+            if r'tilde{\Phi}' in str(element):
+                self.loop_flux_positions.append(n)
+
+        # =============================================================================
         # Define voltage operator
         # =============================================================================
         self.v = q_vec_without_offset.transpose()*self.c_matrix_inv
@@ -685,7 +709,7 @@ class CircuitQ:
         parameter_values: list
             Numerical values of system parameters (corresponds to self.h_parameters).
         default_zero: bool (Default True)
-
+            If set to True, the default valeus of the charge and flux offsets will be 0.
 
         Returns
         ----------
@@ -796,7 +820,7 @@ class CircuitQ:
 
         if any(p is False for p in parameter_values):
             raise Exception("Parameter type might have not been recognized.")
-        self.parameter_values = parameter_values
+        self.parameter_values = list(parameter_values)
         # Define parameter value dictionary
         # =============================================================================
         for n, parameter in enumerate(self.h_parameters):
@@ -939,7 +963,7 @@ class CircuitQ:
 
         # numerical matrices for offset flux (flux basis)
         # =============================================================================
-        _parameter_values = copy.deepcopy(self.parameter_values)
+        _parameter_values = list(copy.deepcopy(self.parameter_values))
         for key, value in self.loop_fluxes.items():
             if (key[0] in self.charge_basis_nodes and
                 key[1] in self.charge_basis_nodes):
