@@ -41,19 +41,21 @@ class CircuitQ:
             If False, SI-units are used.
         """
         self.circuit_graph = circuit_graph
-        if natural_units:
+        self.natural_units = natural_units
+        self.hbar_si = 1.054571817e-34
+        if self.natural_units:
             self.e = 0.5
             self.hbar = 1
         else:
             self.e = 1.602176634e-19
-            self.hbar = 1.054571817e-34
+            self.hbar = self.hbar_si
         #Characteristic Values
         c_v = {}
-        if natural_units:
-            c_v["C"] = 1/(8*2*np.pi)
-            c_v["L"] = 1/(2*np.pi)
-            c_v["E_C"] = 2*np.pi
-            c_v["E"] = 2*np.pi*3
+        if self.natural_units:
+            c_v["E_C"] = 2 * np.pi * 0.5
+            c_v["C"] = 1/(8*c_v["E_C"])
+            c_v["L"] = 1/(2*np.pi*3)
+            c_v["E"] = 2*np.pi*5
         else:
             c_v["C"] =1e-13 #F
             c_v["L"] = 1e-7 #H
@@ -1310,6 +1312,8 @@ class CircuitQ:
         T_c = 1.2 # K
         k_b = 1.380649e-23 # J/K
         delta = 1.76*T_c*k_b # superconducting gap
+        if self.natural_units:
+            delta /= self.hbar_si*1e9
         x_qp = 1e-8 #np.sqrt(2*np.pi*k_b*T/delta)*np.exp(-delta/(k_b*T))
         # Define Noise Spectral density without E_J (in accordance with
         # Catelani et al. https://doi.org/10.1103/PhysRevB.84.064517)
@@ -1396,10 +1400,16 @@ class CircuitQ:
         # Set numerical values for parameters
         # =============================================================================
         self._qubit_states_energy()
-        Q_cap = 3e6*(2*np.pi*self.hbar*6e9/self.omega_q)**0.7
+        if self.natural_units:
+            Q_cap = 3e6*(2*np.pi*6/self.omega_q)**0.7
+        else:
+            Q_cap = 3e6*(2*np.pi*self.hbar*6e9/self.omega_q)**0.7
         k_b = 1.380649e-23
         T = 0.015
-        thermal_factor = self.omega_q/(k_b*T)
+        if self.natural_units:
+            thermal_factor = self.omega_q/(k_b*T/(self.hbar_si*1e9))
+        else:
+            thermal_factor = self.omega_q/(k_b*T)
         # Define Noise Spectral Density without C
         # Smith et al.:
         # S_q = 2*self.hbar/Q_cap * 1/np.tanh(thermal_factor/2) / (1 +
