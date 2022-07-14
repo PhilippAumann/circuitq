@@ -1,7 +1,6 @@
 import copy
 import warnings
 import networkx as nx
-import math
 import sympy as sp
 import numpy as np
 import scipy.sparse as spa
