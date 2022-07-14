@@ -98,7 +98,9 @@ class CircuitQ:
         self.sin_phi_half_operators = []
         self.v = None
         self.pot_energy_imp = None
+        self.pot_energy = None
         self.loop_flux_positions = []
+        self.phi_0_symbol = None
         self.h, self.h_parameters, self.h_imp = self.get_classical_hamiltonian()
         self.n_dim = None
         self.grid_length = None
@@ -115,6 +117,7 @@ class CircuitQ:
         self.input_num_list = []
         self.phi_num_dict = {}
         self.potential = None
+        self.potential_full = None
         self.h_num = None
         self.v_num_list = []
         # self.capacitances_sum_dict = {}
@@ -440,6 +443,7 @@ class CircuitQ:
         josephson_energies = {}
         nbr_loop_fluxes = {}
         phi_0_symbol = sp.symbols(r'\Phi_{o}')
+        self.phi_0_symbol = phi_0_symbol
 
         for n_sg, sg in enumerate(red_subgraphs):
             for e in sg.edges(data=True, keys=True):
@@ -543,6 +547,7 @@ class CircuitQ:
                             self.current_operators_all_imp.append(current_operator)
                             if closure_branch:
                                 self.current_operators_imp.append(current_operator)
+        self.pot_energy = pot_energy
 
         # =============================================================================
         # Define C matrix and q vector
@@ -718,6 +723,11 @@ class CircuitQ:
         h_num: numpy array
             Numeric Hamiltonian of the circuit given as a matrix in array form
         """
+        # =============================================================================
+        # Resetting parameters to default value for consecutive runs
+        # =============================================================================
+        self.degenerated = False
+
         # =============================================================================
         # Setting default parameter value for grid_length and set n_dim to odd value
         # =============================================================================
@@ -988,12 +998,26 @@ class CircuitQ:
         # If problem is 1D and formulated in phi-basis:
         # Potential as a List
         # =============================================================================
-        if nbr_subsystems == 1 and len(self.charge_basis_nodes) == 0:
-            potential_lambda = sp.lambdify(phi_list + self.h_parameters,
-                                           self.pot_energy_imp)
-            potential = [potential_lambda(flux, *self.parameter_values) for flux in
-                         flux_grid]
+        flux_variables = [self.phi_dict[n] for n in self.nodes_wo_ground]
+        potential_lambda = sp.lambdify(flux_variables + self.h_parameters + [self.phi_0_symbol],
+                                       self.pot_energy)
+        flux_list_full = np.linspace(-4*np.pi * self.phi_0, 4*np.pi * self.phi_0, 100)
+        if nbr_subsystems == 1:
+            potential = [potential_lambda(flux, *self.parameter_values, self.phi_0) for flux in
+                         self.flux_grid_dict[self.nodes_wo_ground[0]]]
             self.potential = potential
+            potential_full = [potential_lambda(flux, *self.parameter_values, self.phi_0) for flux in
+                         flux_list_full]
+            self.potential_full = potential_full
+        elif nbr_subsystems == 2:
+            potential = [[potential_lambda(flux1, flux2, *self.parameter_values, self.phi_0) for
+                          flux1 in self.flux_grid_dict[self.nodes_wo_ground[0]]]
+                          for flux2 in self.flux_grid_dict[self.nodes_wo_ground[1]]]
+            self.potential = potential
+            potential_full = [[potential_lambda(flux1, flux2, *self.parameter_values, self.phi_0) for
+                              flux1 in flux_list_full]
+                              for flux2 in flux_list_full]
+            self.potential_full = potential_full
 
         # =============================================================================
         # Define numerical Hamiltonian via lambdify
@@ -1116,11 +1140,14 @@ class CircuitQ:
         quotients = []
         distances_to_1 = []
         excited_level = 1
+        energy_range = self.evals[-1] - self.evals[0]
+        absolute_tolerance = 0.001 # GHz Minimal qubit frequency
+        if not self.natural_units:
+            absolute_tolerance *= self.hbar_si*1e9
         # Define first non-degenerate state which is higher then groundstate
         # as excited level
-        tolerance = 0.001    #*100 gives tolerance in percentage for comparison of the
-                            # states to check for degeneracy
-        while math.isclose(self.evals[excited_level], self.evals[0], rel_tol=tolerance):
+        while (abs(self.evals[excited_level] - self.evals[0]) < energy_range*1e-5 or
+               abs(self.evals[excited_level] - self.evals[0]) < absolute_tolerance):
             excited_level += 1
         if excited_level >1:
             warnings.warn("The ground state seems to be degenerated. "
@@ -1133,7 +1160,8 @@ class CircuitQ:
         current_level = excited_level
         check_level = 2
         for k in range(excited_level + 1, len(self.evals)):
-            if math.isclose(self.evals[current_level], self.evals[k], rel_tol=tolerance):
+            if (abs(self.evals[current_level] - self.evals[k]) < energy_range*1e-5 or
+               abs(self.evals[current_level] - self.evals[k]) < absolute_tolerance):
                 if current_level == excited_level:
                     self.excited_subspace.append(k)
                     warnings.warn("The excited state seems to be degenerated. "
@@ -1217,13 +1245,13 @@ class CircuitQ:
                     if n in self.charge_subspaces:
                         node = reversed_subspace_pos[n]
                         flux_list = self.flux_grid_dict[node]
-                        T[i,j] *= np.exp(-1j*flux_list[i_states[n]]*
-                                    self.charge_list[j_state]/self.hbar)
+                        T[i,j] *=   (np.exp(-1j*flux_list[i_states[n]]
+                                    *self.charge_list[j_state]/self.hbar)
+                                    /np.sqrt(self.n_dim))
                     else:
                         if i_states[n]!=j_state:
                             T[i,j] = 0
                             break
-        T = T/np.sqrt(self.n_dim)
         self.T_mtx = T
 
         # =============================================================================
