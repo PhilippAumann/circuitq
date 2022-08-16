@@ -634,7 +634,7 @@ class CircuitQ:
         h_kin_sep = 0
         for n, node_l in enumerate(self.nodes_wo_ground):
             c_matrix_inv_sep[n,n] = 0
-            q_q = sp.symbols('q^{q}_{' + str(node_l) + '}')
+            q_q = sp.symbols('q^{2}_{' + str(node_l) + '}')
             self.q_quadratic_dict[node_l] = q_q
             h_kin_sep += 0.5*(q_q * self.c_matrix_inv[n,n])
         h_kin_sep += 0.5*(q_vec_without_offset.transpose()*c_matrix_inv_sep*
