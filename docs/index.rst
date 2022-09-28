@@ -30,7 +30,7 @@ Table of contents
    api_reference.rst
 
 .. note::
-   Please refer to our `preprint on arXiv <http://arxiv.org/abs/2106.05342>`_ for more details on physics and implementation and to cite our project.
+   Please refer to our `publication <https://doi.org/10.1088/1367-2630/ac8cab>`_ for more details on physics and implementation and to cite our project.
 
 The source code can be found on `CircuitQ's repository at GitHub <https://github.com/PhilippAumann/circuitq>`_.
 
