@@ -1235,7 +1235,7 @@ class CircuitQ:
         # Gives nodes corresponding to subspace position :
         reversed_subspace_pos = dict(map(reversed, self.subspace_pos.items()))
         length = len(self.estates[:,0])
-        T = np.ones((length, length), dtype=np.complex)
+        T = np.ones((length, length), dtype=complex)
         for i in range(length):
             for j in range(length):
                 i_states = basis_states[i]
